@@ -1,0 +1,202 @@
+{% extends 'base.html' %} {# Hérite du template de base #}
+{% load i18n %}
+{% load static %} {# Charge les fichiers statiques (CSS, images, JS) #}
+
+{% block extra_style %}
+<style>
+    /* Style de la carte du composant */
+    .component-card {
+        border: 2px solid red;
+        cursor: pointer;
+        background-color: white;
+        color: black;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+    /* Style appliqué lorsque le composant est vérifié */
+    .component-card.verified {
+        background-color: #5dc494 !important;
+        border-color: #198754 !important;
+        color: white !important;
+    }
+    /* Icône de validation en blanc lorsque le composant est vérifié */
+    .component-card.verified .check-icon {
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        {# Titre principal - traduction activée #}
+        <h2 class="mb-4">{% trans "Vérification de la quantité de composants" %}</h2>
+
+        <!-- PARTIE 1 : Détails de la commande -->
+        <div class="col-md-2 border-end">
+            {# Sous-titre de la section - traduction activée #}
+            <h5 class="text-uppercase fw-bold mb-3">{% trans "Commande en cours" %}</h5>
+
+            <!-- Affichage des détails individuels de la commande -->
+            <div class="mb-3">
+                {# Étiquette - traduction activée #}
+                <label class="form-label fw-bold">{% trans "ID de commande" %}</label>
+                <p class="form-control bg-light">{{ order.order_id }}</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">{% trans "Quantité requise" %}</label>
+                <p class="form-control bg-light">{{ order.quantity }}</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">{% trans "Date limite" %}</label>
+                <p class="form-control bg-light">{{ order.due_date }}</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">{% trans "Numéro de lot" %}</label>
+                <p class="form-control bg-light">{{ order.lot_number }}</p>
+            </div>
+
+            <!-- Image du composant -->
+            <div class="text-center mt-4">
+                <img src="{{ component.image.url }}" alt="{{ component.name }}" class="img-fluid"
+                    style="max-height: 150px;">
+            </div>
+
+            <!-- Formulaire pour modifier la quantité de la commande (réservé aux administrateurs) -->
+            <form method="POST" action="{% url 'change_order_quantity' order.order_id %}" class="mt-3">
+                {% csrf_token %}
+                <div class="mb-2">
+                    {# Placeholder traduisible pour le champ texte #}
+                    <input type="text" name="admin_username" placeholder="{% trans "Nom d'utilisateur admin" %}" required
+                        class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                    <input type="password" name="admin_password" placeholder="{% trans "Mot de passe admin" %}" required
+                        class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                    <input type="number" name="new_quantity" placeholder="{% trans "Nouvelle quantité" %}" min="0" required
+                        class="form-control form-control-sm">
+                </div>
+                {# Texte du bouton traduisible #}
+                <button type="submit" class="btn btn-sm btn-primary">{% trans "Modifier la quantité" %}</button>
+            </form>
+        </div>
+
+        <!-- PARTIE 2 : Liste de la première moitié des composants -->
+        <div class="col-md-3">
+            <div class="row g-1">
+                {% for component in components_first_half %}
+                    {% include '_component_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- PARTIE 3 : Image de l’assemblage -->
+        <div class="col-md-4 d-flex flex-column justify-content-center align-items-center">
+            <div style="width: 100%; max-width: 500px;">
+                {# Attribut alt traduisible pour l'image #}
+                <img src="{% static 'tasks/Assy_Images/MIIV3.png' %}" class="img-fluid" alt="{% trans "Image du composant" %}">
+            </div>
+        </div>
+
+        <!-- PARTIE 4 : Liste de la deuxième moitié des composants -->
+        <div class="col-md-3">
+            <div class="row g-1">
+                {% for component in components_second_half %}
+                    {% include '_component_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Bibliothèque LeaderLine pour tracer des lignes visuelles -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const orderId = "{{ order.order_id }}";
+        const verifyButton = document.getElementById('verifyButton');
+
+        // Fonction pour vérifier si tous les composants sont marqués comme vérifiés
+        function checkAllVerified() {
+            const components = document.querySelectorAll('.component-card');
+            return Array.from(components).every(card => card.classList.contains('verified'));
+        }
+
+        // Met à jour la visibilité du bouton "Suivant" en fonction de l'état des composants
+        function updateVerifyButton() {
+            if (!verifyButton) return;
+            verifyButton.style.display = checkAllVerified() ? 'inline-block' : 'none';
+        }
+
+        // Ajoute un événement click sur chaque carte composant pour changer son état vérifié
+        document.querySelectorAll('.component-card').forEach(card => {
+            card.addEventListener('click', () => {
+                if (card.classList.contains('verified')) return;
+
+                const componentId = card.id.replace('component-', '');
+
+                fetch(`/orders/${orderId}/toggle_component/${componentId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        card.classList.add('verified', 'bg-success', 'text-white');
+
+                        const checkIcon = card.querySelector('.check-icon');
+                        if (checkIcon) {
+                            checkIcon.style.display = 'inline';
+                        }
+
+                        const checkContainer = card.querySelector('.check-container');
+                        if (checkContainer) {
+                            checkContainer.classList.add('bg-success', 'border-success');
+                        }
+
+                        updateVerifyButton();
+                    } else if (data.status === 'no_change') {
+                        console.log('Composant déjà sélectionné');
+                    } else {
+                        alert(data.message || '{% trans "Erreur lors de la vérification du composant." %}');
+                    }
+                })
+                .catch(() => alert('{% trans "Erreur réseau lors de la vérification du composant." %}'));
+            });
+        });
+
+        updateVerifyButton();
+    });
+</script>
+{% endblock %}
+
+{% block footer %}
+<div class="row">
+    <div class="col-2" id="div4">
+        <!-- Lien vers la page précédente -->
+        <a href="{% url 'procedure_detail' procedure.id %}?page=section2" class="btn btn-link text-decoration-none"
+            style="color: white;">
+            <i class="bi bi-arrow-left-circle fs-3 me-2"></i>
+            {# Texte traduisible du lien #}
+            <span>{% trans "Précédent" %}</span>
+        </a>
+    </div>
+    <!-- Colonne centrale vide pour contenu futur éventuel -->
+    <div class="col-8" id="div5"></div>
+
+    <div class="col-2" id="div6">
+        <!-- Bouton 'Suivant' visible uniquement lorsque tous les composants sont vérifiés -->
+        <a id="verifyButton" href="{% url 'work_sequence' order.order_id %}" class="btn btn-link text-decoration-none"
+            style="color: white; display: none;">
+            <span>{% trans "Suivant" %}</span>
+            <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

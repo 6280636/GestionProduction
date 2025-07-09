@@ -1,0 +1,21 @@
+<!-- Champ pour la quantité défectueuse -->
+<input type="number" name="quantity" placeholder="{{ _('Quantité défectueuse') }}" min="1" required class="form-control form-control-sm mb-1">
+<!-- Le placeholder doit être traduit -->
+
+<!-- Sélecteur pour le type de défaut -->
+<select name="defect_type" class="form-select form-select-sm mb-1" required>
+    <option value="">{{ _('Type de défaut') }}</option>
+    <option value="Mauvais assemblage">{{ _('Mauvais assemblage') }}</option>
+    <option value="Dommages physiques">{{ _('Dommages physiques') }}</option>
+    <option value="Pièce manquante">{{ _('Pièce manquante') }}</option>
+    <option value="Autre">{{ _('Autre') }}</option>
+</select>
+<!-- Tous les textes visibles dans les options doivent être traduits -->
+
+<!-- Champ pour le numéro de la pièce affectée -->
+<input type="text" name="part_number" placeholder="{{ _('Numéro de pièce affectée') }}" class="form-control form-control-sm mb-1" required>
+<!-- Le placeholder doit être traduit -->
+
+<!-- Zone de texte pour des remarques supplémentaires -->
+<textarea name="notes" placeholder="{{ _('Remarques (optionnel)') }}" class="form-control form-control-sm mb-1" rows="1"></textarea>
+<!-- Le placeholder doit être traduit -->

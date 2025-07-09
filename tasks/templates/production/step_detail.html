@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %} {# Necesario para tags de traducción #}
+
+{% block content %}
+{% if step.step_number == 1 %}
+<div class="alert alert-info px-4 py-3">
+    <h5 class="fw-bold mb-4 text-primary">{% trans "Instructions spéciales pour l'étape 1 :" %}</h5>
+
+    <div class="container-fluid">
+        <!-- Étape 1 -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6 d-flex">
+                <span class="fw-bold me-2">1.</span>
+                <div>
+                    {% trans "Installer un ME bridé sur un pot sanitaire et marquer la bride au sharpie côté RTD." %}
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="{% static 'tasks/assyV3_Images/stepDetails/magnetPot.jpg' %}" alt="{% trans 'Magnet Pot' %}"
+                     class="img-fluid img-thumbnail" style="max-width: 80%; max-height: 200px;">
+            </div>
+        </div>
+
+        <!-- Étape 2 -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6 d-flex">
+                <span class="fw-bold me-2">2.</span>
+                <div>
+                    {% blocktrans %}Prendre un KimWipe et nettoyer le top du ME à l'alcool <em>(figure 1)</em>.{% endblocktrans %}
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="{% static 'tasks/assyV3_Images/stepDetails/magnetKimWipe.jpg' %}" alt="{% trans 'KimWipe' %}"
+                     class="img-fluid img-thumbnail" style="max-width: 80%; max-height: 200px;">
+            </div>
+        </div>
+
+        <!-- Étape 3 -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6 d-flex">
+                <span class="fw-bold me-2">3.</span>
+                <div>
+                    {% blocktrans %}Installer le magnet avec la Jig XXXXXXX <em>(figure 2)</em>.{% endblocktrans %}
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="{% static 'tasks/assyV3_Images/stepDetails/magnetJig.jpg' %}" alt="{% trans 'Magnet Jig' %}"
+                     class="img-fluid img-thumbnail" style="max-width: 80%; max-height: 200px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif step.step_number == 2 %}
+    <div class="alert alert-warning">
+        <h5>{% trans "Instructions pour l'étape 2 :" %}</h5>
+        <p>{% trans "Assurez-vous que le capteur est bien positionné." %}</p>
+    </div>
+{% else %}
+    {% if step.image %}
+        <img src="{{ step.image.url }}" class="img-fluid mb-3" style="max-height: 300px;" alt="{% trans 'Image de l\'étape' %}">
+    {% endif %}
+{% endif %}
+<button class="btn btn-secondary mt-3" onclick="window.close()">{% trans "Fermer cette page" %}</button>
+<p class="text-muted mt-2">{% trans "Si le bouton ne fonctionne pas, vous pouvez fermer cet onglet manuellement." %}</p>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %} {# Hérite de la template de base #}
+{% load static %} {# Charge les fichiers statiques (images, CSS, JS, etc.) #}
+{% load i18n %} {# Charge le système de traduction #}
+
+{% block extra_style %} {# Espace réservé pour ajouter du style CSS spécifique si nécessaire #}
+{% endblock %}
+
+{% block content %} {# Contenu principal #}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Affichage conditionnel selon si le travail est terminé ou non -->
+        <div class="text-center mt-5">
+            {% if travail_termine %}
+            <h2>✅ {% trans "Commande terminée" %}</h2> {# Confirmation que la commande est finalisée #}
+            <p>{% trans "La commande a été traitée avec succès." %}</p>
+            {% else %}
+            <h2>⏳ {% trans "Travail en cours" %}</h2> {# Indication que le travail est toujours en cours #}
+            <p>{% trans "Le travail n'est pas encore terminé." %}</p>
+            {% endif %}
+        </div>
+
+        <!-- Colonne contenant le résumé des informations de production -->
+        <div class="col-md-7 mt-4">
+            <div class="card shadow-sm">
+                <div class="card-header text-center text-uppercase fw-bold">
+                    {% trans "Résumé de la Production" %} {# Titre du résumé #}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <tbody>
+                                <!-- Données de la commande -->
+                                <tr>
+                                    <th>{% trans "ID de la commande" %}</th>
+                                    <td>{{ order.order_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Numéro du lot" %}</th>
+                                    <td>{{ order.lot_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Quantité complétée" %}</th>
+                                    <td>{{ completed_units }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Quantité défectueuse" %}</th>
+                                    <td>{{ defect_count }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <td>{{ date|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Temps écoulé" %}</th>
+                                    <td id="elapsedTime">{{ elapsed_time }}</td> {# Champ mis à jour par script JS #}
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Responsable" %}</th>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne contenant l’image illustrative -->
+        <div class="col-md-5 text-center mb-4 mt-4">
+            <img src="{% static 'tasks/Assy_Images/MIIV3.png' %}" class="img-fluid" alt="{% trans 'Résumé final' %}"
+                style="max-height: 350px;"> {# Image illustrative de la production #}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+<div class="row">
+    <!-- Lien vers la page précédente -->
+    <div class="col-2" id="div4">
+        <a href="{% url 'work_step_view' order.order_id 1 %}" class="btn btn-link text-decoration-none"
+            style="color: white;">
+            <i class="bi bi-arrow-left-circle fs-3 me-2"></i>
+            <span>{% trans "Précédent" %}</span> {# Bouton pour revenir à la première étape #}
+        </a>
+    </div>
+     <!-- Colonne vide centrale (peut servir pour du contenu futur) -->
+    <div class="col-8" id="div5"></div>
+    <!-- Bouton de déconnexion -->
+    <div class="col-2" id="div6">
+        <a href="/logout/" class="btn btn-link text-decoration-none"
+            style="color: white;">
+            <span>{% trans "Sortir" %}</span> 
+            <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Récupère le temps depuis le localStorage (stockage local du navigateur)
+    const elapsedSeconds = parseInt(localStorage.getItem("workTimerSeconds")) || 0;
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
+    const formatted = `${minutes}m ${seconds}s`;
+
+    // Affiche le temps dans le champ correspondant de la page
+    document.getElementById('elapsedTime').textContent = formatted;
+</script>
+{% endblock %}

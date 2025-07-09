@@ -1,0 +1,120 @@
+<!-- Composant principal du minuteur -->
+<div class="text-white fw-bold mt-2">
+    <div id="timer" class="mb-2">
+        <!-- Affichage des minutes et secondes -->
+        <span id="minutes">00</span>:<span id="seconds">00</span>&nbsp;&nbsp;
+
+        <!-- Bouton pause/reprise -->
+        <button id="pauseButton" class="btn btn-warning btn-sm">
+            <i class="bi bi-pause-fill"></i>{{ _("Pause") }}
+            <!-- Le texte du bouton Pause est traduit -->
+        </button>
+    </div>
+</div>
+
+<!-- Alerte plein écran après une pause prolongée -->
+<div id="pauseAlert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(187, 11, 11, 0.9); color: white; z-index: 9999; text-align: center; padding-top: 20%;">
+    <h1>👋 {{ _("Vous êtes là ?") }}</h1>
+    <p>{{ _("Revenez quand vous êtes prêt·e 😊") }}</p>
+    <button onclick="hidePauseAlert()" class="btn btn-light mt-4">{{ _("Je suis là") }}</button>
+    <!-- Tous les textes de l'alerte sont traduits -->
+</div>
+
+<script>
+    // Initialisation des variables
+    let totalSeconds = parseInt(localStorage.getItem("workTimerSeconds")) || 0;
+    let timerRunning = true;
+    let mainInterval;
+    let pauseStartTime = null;
+    let pauseCheckerInterval;
+
+    // Récupération des éléments DOM
+    const minutes = document.getElementById("minutes");
+    const seconds = document.getElementById("seconds");
+    const pauseButton = document.getElementById("pauseButton");
+    const pauseAlert = document.getElementById("pauseAlert");
+
+    // Met à jour l'affichage du minuteur
+    function updateTimerDisplay() {
+        const min = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const sec = String(totalSeconds % 60).padStart(2, '0');
+        minutes.textContent = min;
+        seconds.textContent = sec;
+    }
+
+    // Incrémentation du temps et sauvegarde
+    function updateTimer() {
+        totalSeconds++;
+        localStorage.setItem("workTimerSeconds", totalSeconds);
+        updateTimerDisplay();
+    }
+
+    function startTimer() {
+        mainInterval = setInterval(updateTimer, 1000);
+        timerRunning = true;
+    }
+
+    function stopTimer() {
+        clearInterval(mainInterval);
+        timerRunning = false;
+    }
+
+    // Vérifie si la pause dépasse 1 minute
+    function checkPauseDuration() {
+        if (pauseStartTime && (new Date() - pauseStartTime) / 60000 >= 1) {
+            showPauseAlert();
+            clearInterval(pauseCheckerInterval);
+        }
+    }
+
+    function showPauseAlert() {
+        pauseAlert.style.display = 'block';
+    }
+
+    function hidePauseAlert() {
+        pauseAlert.style.display = 'none';
+    }
+
+    // Gestion du bouton Pause / Reprise
+    pauseButton.addEventListener("click", () => {
+        if (timerRunning) {
+            stopTimer();
+            pauseStartTime = new Date();
+            pauseCheckerInterval = setInterval(checkPauseDuration, 1000);
+        } else {
+            startTimer();
+            pauseStartTime = null;
+            clearInterval(pauseCheckerInterval);
+            hidePauseAlert();
+        }
+        // Mise à jour du texte du bouton avec traduction
+        pauseButton.innerHTML = `<i class="bi bi-${timerRunning ? "pause-fill" : "play-fill"}"></i> ${timerRunning ? "{{ _('Pause') }}" : "{{ _('Démarrer') }}"}`;
+    });
+
+    // Pauses automatiques selon l'heure
+    setInterval(() => {
+        const { hours, minutes: mins } = { hours: new Date().getHours(), minutes: new Date().getMinutes() };
+        const shouldPause = (h, m) => hours === h && mins === m && timerRunning;
+
+        if (shouldPause(10, 0)) {
+            stopTimer();
+            alert("{{ _('Pause.') }}");
+        } else if (shouldPause(12, 0)) {
+            stopTimer();
+            alert("{{ _('Pause automatique pour le déjeuner. Reprenez manuellement à votre retour.') }}");
+        } else if (shouldPause(16, 30)) {
+            stopTimer();
+            alert("{{ _('Fin de la journée. Le minuteur s\'est arrêté.') }}");
+            pauseButton.disabled = true;
+        }
+
+        if (!timerRunning) {
+            pauseButton.innerHTML = '<i class="bi bi-play-fill"></i> {{ _("Démarrer") }}';
+        }
+    }, 10000);
+
+    // Initialisation à l’ouverture
+    updateTimerDisplay();
+    startTimer();
+</script>

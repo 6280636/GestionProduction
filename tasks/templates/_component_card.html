@@ -1,0 +1,31 @@
+{% load math_filters %}
+{% load i18n %}
+<div class="col-12">
+    <div id="component-{{ component.id }}"
+        class="component-card d-flex align-items-center justify-content-between rounded p-2 shadow-sm bg-white {% if component.is_selected %}verified{% endif %}"
+        style="cursor:pointer;">
+
+        <div class="d-flex align-items-center" style="gap: 10px;">
+            {% if component.image %}
+            <img src="{{ component.image.url }}" alt="{{ component.name }}" class="img-fluid"
+                style="width: 60px; height: 60px; object-fit: contain;">
+            {% else %}
+            <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                style="width: 50px; height: 50px;">{% trans "Pas d'image" %}</div>
+            {% endif %}
+            <div style="font-size: 0.90rem;">
+                <div class="fw-bold">{{ component.name }}</div>
+                <div class="text-muted" style="text-align: left;">{% trans "ItemId" %} : &nbsp;&nbsp;<strong>{{ component.item_id }}</strong></div>
+                <div class="text-muted" style="text-align: left;">
+                    {% trans "Qté" %}&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;<strong>{{ component.required_quantity|multiply:order.quantity|floatformat:0 }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="check-container d-flex align-items-center justify-content-center {% if component.is_selected %} bg-success border-success {% endif %}"
+            style="width: 24px; height: 24px; border: 2px solid #ccc; border-radius: 4px; transition: background-color 0.3s ease;">
+            <span class="check-icon"
+                style="font-size: 1.2rem; color: white; {% if not component.is_selected %}display: none;{% endif %} transition: opacity 0.3s ease;">✔</span>
+        </div>
+    </div>
+</div>

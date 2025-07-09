@@ -1,0 +1,55 @@
+{% extends 'base.html' %} {# Hérite du template de base  #}
+{% load static %} {# Charge les fichiers statiques (images, CSS, JS, etc.) #}
+{% load custom_filters %} {# Charge des filtres personnalisés si nécessaires pour la logique du template #}
+{% load i18n %} {# Charge le tag i18n pour la traduction #}
+
+{% block extra_style %} {# Feuilles de style supplémentaires pour cette page #} 
+<style>
+  .img-step {
+    max-width: 100px;  /* Limite la largeur des images pour un rendu plus propre */
+    height: auto;      /* Conserve les proportions d’origine */
+  }
+</style>
+{% endblock %}
+
+{% block content %} {# Contenu principal #}
+<!-- work_sequence.html : Affiche les étapes d'une commande spécifique -->
+<h1>{% blocktrans %}Séquence de travail pour la commande {{ order.order_id }}{% endblocktrans %}</h1> {# Titre principal affichant le numéro de commande #}
+
+{% for step in steps %}
+<div class="step-box mt-4" style="text-align: left;">
+  <h2>{% blocktrans %}Étape {{ step.step_number }} : {{ step.title }}{% endblocktrans %}</h2>  {# Affiche le numéro et le titre de l'étape #}
+  <p>{{ step.description }}</p> {# Description de l'étape actuelle #}
+  
+  {% if step.thumbnail %}
+  <img src="{{ step.thumbnail.url }}" alt="{{ step.title }}" class="img-thumbnail img-step">
+  {# Affiche la miniature associée à l'étape, en taille réduite grâce à la classe CSS #}
+  {% endif %}
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block footer %}
+<div class="row">
+  <!-- Lien vers la page précédente -->
+  <div class="col-2" id="div4">
+    <a href="{% url 'verify_components' order.order_id %}" class="btn btn-link text-decoration-none"
+      style="color: white;">
+      <i class="bi bi-arrow-left-circle fs-3 me-2"></i>
+      <span>{% trans "Précédent" %}</span> {# Bouton pour revenir à la vérification des composants #}
+    </a>
+  </div>
+  <!-- Colonne vide centrale (peut servir pour du contenu futur) -->
+  <div class="col-8" id="div5"></div>
+  <!-- Lien vers la page suivante -->
+  <div class="col-2" id="div6">
+    {% with request.session.last_step_number as last_step %}
+      <a href="{% url 'work_step_view' order.order_id last_step|default:1 %}" class="btn btn-link text-decoration-none"
+        style="color: white;">
+        <span>{% trans "Suivant" %}</span>
+        <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
+      </a>
+    {% endwith %}
+  </div>
+</div>
+{% endblock %}

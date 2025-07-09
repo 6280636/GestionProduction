@@ -1,0 +1,134 @@
+{% load static %} {# Charge les fichiers statiques (CSS, JS, images, etc.) #}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8"> {# Encodage universel recommandé #}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> {# Responsive sur mobile #}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> {# Meilleure compatibilité avec IE #}
+
+    {# Feuille de style personnalisée #}
+    <link rel="stylesheet" href="{% static 'tasks/css/style.css' %}">
+
+    {# Bootstrap CSS #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css">
+
+    {# Icônes Bootstrap #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <title>{% block title %}Application CRUD Django{% endblock %}</title>
+
+    {% block extra_style %}
+    {% endblock %} {# Bloc extensible pour ajouter des styles spécifiques #}
+</head>
+
+<body>
+    <header>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-2" id="div1">
+                    {# Logo de l'application #}
+                    <img src="{% static 'tasks/images/inkspeclogo.jpg' %}" alt="Inkspec" width="1000" height="1000"
+                        class="img-fluid mt-2">
+                </div>
+
+                <div class="col-8" id="div2">
+                    {# Menu de navigation avec Bootstrap #}
+                    <ul class="navbar-nav d-flex flex-row justify-content-end w-100 mb-2 mb-lg-0 gap-3">
+
+                        {# Lien vers le pdf #}
+                        <li class="nav-item text-center">
+                            {% if step.pdf_file %}
+                            <a href="#" class="nav-link active d-flex flex-column align-items-center"
+                                data-bs-toggle="modal" data-bs-target="#pdfModal"
+                                onclick="loadPDF('{{ step.pdf_file.url }}')">
+                                <i class="bi bi-file-earmark-pdf fs-4"></i>
+                                <span>{% trans "PDF" %}</span>
+                            </a>
+                            {% endif %}
+                        </li>
+                        <li class="nav-item text-center mt-2">
+                            <form id="langForm" action="{% url 'set_language' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="language" id="langInput" value="{% if LANGUAGE_CODE == 'fr' %}en{% else %}fr{% endif %}">
+                                <button type="submit" class="nav-link active d-flex flex-column align-items-center bg-transparent border-0 p-0">
+                                    {% if LANGUAGE_CODE == 'fr' %}
+                                        <i class="bi bi-translate fs-4" id="langIcon" title="Switch to English"></i>
+                                        <span class="large">EN</span>
+                                    {% else %}
+                                        <i class="bi bi-translate fs-4" id="langIcon" title="Passer au français"></i>
+                                        <span class="large">FR</span>
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </li>
+                        {# Lien vers l'interface admin #}
+                        <li class="nav-item text-center">
+                            <a class="nav-link active d-flex flex-column align-items-center"
+                                href="{% url 'admin:index' %}">
+                                <i class="bi bi-person-gear fs-4"></i>
+                                <span>{% trans "Admin" %}</span>
+                            </a>
+                        </li>
+
+                        {% if user.is_authenticated %}
+                        {# Si l'utilisateur est connecté : bouton de déconnexion #}
+                        <li class="nav-item text-center">
+                            <a class="nav-link active d-flex flex-column align-items-center" href="{% url 'logout' %}">
+                                <i class="bi bi-power fs-4"></i>
+                                <span>{% trans "Déconnexion" %}</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        {# Sinon : lien de connexion #}
+                        <li class="nav-item text-center">
+                            <a class="nav-link active d-flex flex-column align-items-center"
+                                href="{% url 'employee_login' %}">
+                                <i class="bi bi-person-circle fs-4"></i>
+                                <span>{% trans "Connexion" %}</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="col-2" id="div3">
+                    {% if user.is_authenticated %}
+                    {# Affiche le nom d'utilisateur connecté #}
+                    <span class="navbar-text fw-bold">
+                        {{ user.username }} {% block timer %}{% endblock %}
+                    </span>
+                    {% else %}
+                    {# Texte par défaut si aucun utilisateur connecté #}
+                    <p class="navbar-text text-white">{% trans "Utilisateur non connecté" %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {# Contenu principal de la page #}
+    <main class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {# Pied de page modulaire #}
+    <footer class="container-fluid">
+        {% block footer %}
+        {% endblock %}
+    </footer>
+
+    {# Scripts JS : Bootstrap et bibliothèque complémentaire #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+    {% block extra_js %}
+    {# Espace pour insérer du JavaScript spécifique à chaque page #}
+    {% endblock %}
+</body>
+
+</html>

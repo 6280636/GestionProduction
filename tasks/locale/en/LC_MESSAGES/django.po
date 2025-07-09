@@ -1,0 +1,1003 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-27 15:17-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\tasks\forms.py:17
+#, fuzzy
+#| msgid "Numéro d'employé"
+msgid "Entrez votre numéro de employé"
+msgstr "Enter your employee number"
+
+#: .\tasks\models.py:18
+msgid "Utilisateur"
+msgstr "User"
+
+#: .\tasks\models.py:22
+msgid "Numéro d'employé"
+msgstr "Employee number"
+
+#: .\tasks\models.py:37
+msgid "Identifiant de commande"
+msgstr "Order ID"
+
+#: .\tasks\models.py:40
+msgid "Quantité commandée"
+msgstr "Ordered quantity"
+
+#: .\tasks\models.py:43
+msgid "Date de la commande"
+msgstr "Order date"
+
+#: .\tasks\models.py:46
+msgid "Date limite de livraison"
+msgstr "Delivery deadline"
+
+#: .\tasks\models.py:50
+msgid "En attente"
+msgstr "Pending"
+
+#: .\tasks\models.py:51
+msgid "Expédiée"
+msgstr "Shipped"
+
+#: .\tasks\models.py:52
+msgid "Livrée"
+msgstr "Delivered"
+
+#: .\tasks\models.py:57
+msgid "Statut de la commande"
+msgstr "Order status"
+
+#: .\tasks\models.py:61 .\tasks\templates\order_detail.html:50
+#: .\tasks\templates\production\work_step.html:39
+#: .\tasks\templates\verify_components.html:54
+msgid "Numéro de lot"
+msgstr "Batch number"
+
+#: .\tasks\models.py:66
+msgid "Item codé"
+msgstr "Coded item"
+
+#: .\tasks\models.py:81
+msgid "Nom de la procédure"
+msgstr "Procedure name"
+
+#: .\tasks\models.py:84
+msgid "Description détaillée de la procédure"
+msgstr "Detailed description of the procedure"
+
+#: .\tasks\models.py:88
+msgid "Nom de la personne qui a préparé la procédure"
+msgstr "Name of the person who prepared the procedure"
+
+#: .\tasks\models.py:91 .\tasks\templates\procedure_detail.html:44
+msgid "Date de préparation"
+msgstr "Date of preparation"
+
+#: .\tasks\models.py:95
+msgid "Nom de la personne qui a révisé la procédure"
+msgstr "Name of the person who reviewed the procedure"
+
+#: .\tasks\models.py:98 .\tasks\templates\procedure_detail.html:45
+msgid "Date de révision"
+msgstr "Review date"
+
+#: .\tasks\models.py:102
+msgid "Nom de la personne qui a approuvé la procédure"
+msgstr "Name of the person who approved the procedure"
+
+#: .\tasks\models.py:105 .\tasks\templates\procedure_detail.html:46
+msgid "Date d'approbation"
+msgstr "Approval date"
+
+#: .\tasks\models.py:109
+msgid "Numéro d'identification de la procédure"
+msgstr "Procedure identification number"
+
+#: .\tasks\models.py:113
+msgid "Numéro d'assemblage lié"
+msgstr "Related assembly number"
+
+#: .\tasks\models.py:117
+msgid "Numéro de révision de la procédure"
+msgstr "Procedure revision number"
+
+#: .\tasks\models.py:127
+msgid "Code unique identifiant l'élément"
+msgstr "Unique code identifying the item"
+
+#: .\tasks\models.py:132
+msgid "Lien vers la procédure associée, protection contre suppression"
+msgstr "Link to associated procedure, deletion protection"
+
+#: .\tasks\models.py:138
+msgid "Chemin ou URL vers une image générale du produit (optionnel)"
+msgstr "Path or URL to a general product image (optional)"
+
+#: .\tasks\models.py:154
+msgid "Liaison vers la procédure, suppression en cascade"
+msgstr "Link to procedure, cascade deletion"
+
+#: .\tasks\models.py:158
+msgid "Nom de l'outil"
+msgstr "Tool name"
+
+#: .\tasks\models.py:162
+msgid "Quantité nécessaire (par défaut 1)"
+msgstr "Required quantity (default 1)"
+
+#: .\tasks\models.py:168
+msgid "Image de l'outil stockée dans le dossier 'tools/'"
+msgstr "Tool image stored in 'tools/' folder"
+
+#: .\tasks\models.py:184
+msgid "CodeItem associé"
+msgstr "Associated CodeItem"
+
+#: .\tasks\models.py:188
+msgid "Nom du composant"
+msgstr "Component name"
+
+#: .\tasks\models.py:192
+msgid "Identifiant unique de l'élément"
+msgstr "Unique identifier of the item"
+
+#: .\tasks\models.py:195
+msgid "Quantité requise du composant"
+msgstr "Required component quantity"
+
+#: .\tasks\models.py:201 .\tasks\templates\verify_components.html:98
+msgid "Image du composant"
+msgstr "Component image"
+
+#: .\tasks\models.py:205
+msgid "px depuis le bord gauche"
+msgstr "px from left edge"
+
+#: .\tasks\models.py:206
+msgid "Position horizontale"
+msgstr "Horizontal position"
+
+#: .\tasks\models.py:210
+msgid "px depuis le bord supérieur"
+msgstr "px from top edge"
+
+#: .\tasks\models.py:211
+msgid "Position verticale"
+msgstr "Vertical position"
+
+#: .\tasks\models.py:215
+msgid "Ordre d'empilement"
+msgstr "Stacking order"
+
+#: .\tasks\models.py:216
+msgid "Ordre d'affichage (z-index)"
+msgstr "Display order (z-index)"
+
+#: .\tasks\models.py:239
+msgid "Titre de l'étape"
+msgstr "Step title"
+
+#: .\tasks\models.py:242
+msgid "Description de l'étape"
+msgstr "Step description"
+
+#: .\tasks\models.py:246
+msgid "Unités nécessaires"
+msgstr "Units needed"
+
+#: .\tasks\models.py:252
+msgid "Image de l'étape"
+msgstr "Step image"
+
+#: .\tasks\models.py:258
+msgid "Miniature image"
+msgstr "Thumbnail image"
+
+#: .\tasks\models.py:263
+msgid "URL vidéo"
+msgstr "Video URL"
+
+#: .\tasks\models.py:269
+msgid "Fichier PDF"
+msgstr "PDF file"
+
+#: .\tasks\models.py:277 .\tasks\models.py:297
+msgid "Étape de travail"
+msgstr "Work step"
+
+#: .\tasks\models.py:278
+msgid "Étapes de travail"
+msgstr "Work steps"
+
+#: .\tasks\models.py:292 .\tasks\models.py:390
+msgid "Commande concernée"
+msgstr "Related order"
+
+#: .\tasks\models.py:300 .\tasks\templates\production\order_completed.html:47
+#: .\tasks\templates\production\partials\_defect_form_fields.html:2
+msgid "Quantité défectueuse"
+msgstr "Defective quantity"
+
+#: .\tasks\models.py:307
+msgid "Signalé par"
+msgstr "Reported by"
+
+#: .\tasks\models.py:311
+msgid "Date et heure de signalement"
+msgstr "Date and time of report"
+
+#: .\tasks\models.py:315 .\tasks\models.py:354
+msgid "Notes supplémentaires"
+msgstr "Additional notes"
+
+#: .\tasks\models.py:322
+msgid "Défaut d'étape de travail"
+msgstr "Work step defect"
+
+#: .\tasks\models.py:323
+msgid "Défauts d'étapes de travail"
+msgstr "Work step defects"
+
+#: .\tasks\models.py:337
+msgid "Commande liée"
+msgstr "Related order"
+
+#: .\tasks\models.py:342
+msgid "Étape du processus"
+msgstr "Process step"
+
+#: .\tasks\models.py:346
+#: .\tasks\templates\production\partials\_defect_form_fields.html:7
+msgid "Type de défaut"
+msgstr "Defect type"
+
+#: .\tasks\models.py:350
+msgid "Numéro de pièce"
+msgstr "Part number"
+
+#: .\tasks\models.py:358
+msgid "Autorisé par"
+msgstr "Authorized by"
+
+#: .\tasks\models.py:362
+msgid "Email de notification"
+msgstr "Notification email"
+
+#: .\tasks\models.py:366
+msgid "Date et heure de déclaration"
+msgstr "Date and time of declaration"
+
+#: .\tasks\models.py:369
+msgid "Numéro d’unité"
+msgstr "Unit number"
+
+#: .\tasks\models.py:376
+msgid "Défaut"
+msgstr "Defect"
+
+#: .\tasks\models.py:377 .\tasks\templates\production\work_step.html:152
+msgid "Défauts"
+msgstr "Defects"
+
+#: .\tasks\models.py:393
+msgid "Numéro de l’unité de production"
+msgstr "Production unit number"
+
+#: .\tasks\models.py:398
+msgid "Étape spécifique"
+msgstr "Specific step"
+
+#: .\tasks\models.py:402
+msgid "Étape complétée"
+msgstr "Step completed"
+
+#: .\tasks\models.py:407
+msgid "Date et heure de complétion"
+msgstr "Completion date and time"
+
+#: .\tasks\models.py:413
+msgid "Progression de l'étape"
+msgstr "Step progress"
+
+#: .\tasks\models.py:414
+msgid "Progressions des étapes"
+msgstr "Steps progress"
+
+#: .\tasks\models.py:429 .\tasks\models.py:454
+msgid "Commande"
+msgstr "Order"
+
+#: .\tasks\models.py:434
+msgid "Composant"
+msgstr "Component"
+
+#: .\tasks\models.py:438
+msgid "Sélectionné"
+msgstr "Selected"
+
+#: .\tasks\models.py:443
+msgid "Composant de commande"
+msgstr "Order component"
+
+#: .\tasks\models.py:444
+msgid "Composants de commande"
+msgstr "Order components"
+
+#: .\tasks\models.py:459
+#, fuzzy
+#| msgid "Composant"
+msgid "Composant lié"
+msgstr "Component"
+
+#: .\tasks\models.py:462
+#, fuzzy
+#| msgid "Numéro de l’unité de production"
+msgid "Unité de production"
+msgstr "Production unit number"
+
+#: .\tasks\models.py:466
+#, fuzzy
+#| msgid "Numéro de pièce"
+msgid "Numéro de série"
+msgstr "Part number"
+
+#: .\tasks\models.py:470
+#, fuzzy
+#| msgid "Nom du composant"
+msgid "Nom du composant (copié)"
+msgstr "Component name"
+
+#: .\tasks\templates\_component_card.html:14
+msgid "Pas d'image"
+msgstr "No image"
+
+#: .\tasks\templates\_component_card.html:18
+msgid "ItemId"
+msgstr "ItemId"
+
+#: .\tasks\templates\_component_card.html:20
+msgid "Qté"
+msgstr "Qty"
+
+#: .\tasks\templates\_order_detail_form.html:5
+msgid "SCANNER OU SAISIR UN NUMÉRO DE COMMANDE"
+msgstr "SCAN OR ENTER AN ORDER NUMBER"
+
+#: .\tasks\templates\_order_detail_form.html:12
+msgid "NUMÉRO DE COMMANDE"
+msgstr "ORDER NUMBER"
+
+#: .\tasks\templates\_order_detail_form.html:19
+msgid "VALIDER"
+msgstr "VALIDATE"
+
+#: .\tasks\templates\admin\base_site.html:11
+msgid "Language"
+msgstr "Language"
+
+#: .\tasks\templates\base.html:48
+msgid "PDF"
+msgstr "PDF"
+
+#: .\tasks\templates\base.html:72
+msgid "Admin"
+msgstr "Admin"
+
+#: .\tasks\templates\base.html:81
+msgid "Déconnexion"
+msgstr "Logout"
+
+#: .\tasks\templates\base.html:90 .\tasks\templates\employee_login.html:10
+msgid "Connexion"
+msgstr "Login"
+
+#: .\tasks\templates\base.html:105
+msgid "Utilisateur non connecté"
+msgstr "User not logged in"
+
+#: .\tasks\templates\employee_login.html:24
+msgid "Se connecter"
+msgstr "Sign in"
+
+#: .\tasks\templates\order_detail.html:23
+msgid "COMMANDE SÉLECTIONNÉE"
+msgstr "SELECTED ORDER"
+
+#: .\tasks\templates\order_detail.html:29
+#: .\tasks\templates\production\work_step.html:24
+#: .\tasks\templates\verify_components.html:42
+msgid "ID de commande"
+msgstr "Order ID"
+
+#: .\tasks\templates\order_detail.html:35
+#: .\tasks\templates\production\work_step.html:29
+#: .\tasks\templates\verify_components.html:46
+msgid "Quantité requise"
+msgstr "Required quantity"
+
+#: .\tasks\templates\order_detail.html:39
+msgid "Statut de l'ordre de fabrication"
+msgstr "Manufacturing order status"
+
+#: .\tasks\templates\order_detail.html:46
+msgid "Date de commande"
+msgstr "Order date"
+
+#: .\tasks\templates\order_detail.html:56
+msgid "Date d'échéance"
+msgstr "Due date"
+
+#: .\tasks\templates\order_detail.html:64
+msgid "Outils Requis"
+msgstr "Required tools"
+
+#: .\tasks\templates\order_detail.html:86
+#: .\tasks\templates\procedure_detail.html:90
+#: .\tasks\templates\procedure_detail1.html:83
+#: .\tasks\templates\production\work_sequence.html:48
+#: .\tasks\templates\production\work_step.html:381
+#: .\tasks\templates\verify_components.html:197
+msgid "Suivant"
+msgstr "Next"
+
+#: .\tasks\templates\procedure_detail.html:15
+msgid "Instructions de travail"
+msgstr "Work instructions"
+
+#: .\tasks\templates\procedure_detail.html:28
+msgid "Rév :"
+msgstr "Rev:"
+
+#: .\tasks\templates\procedure_detail.html:34
+msgid "Préparé par"
+msgstr "Prepared by"
+
+#: .\tasks\templates\procedure_detail.html:35
+msgid "Révisé par"
+msgstr "Reviewed by"
+
+#: .\tasks\templates\procedure_detail.html:36
+msgid "Approuvé par"
+msgstr "Approved by"
+
+#: .\tasks\templates\procedure_detail.html:38
+msgid "Numéro de procédure :"
+msgstr "Procedure number:"
+
+#: .\tasks\templates\procedure_detail.html:48
+msgid "Numéro d'assemblage :"
+msgstr "Assembly number:"
+
+#: .\tasks\templates\procedure_detail.html:56
+msgid "Titre"
+msgstr "Title"
+
+#: .\tasks\templates\procedure_detail.html:59
+msgid ""
+"Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor "
+"sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur "
+"adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit "
+"Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor "
+"sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur "
+"adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit"
+msgstr ""
+"Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor "
+"sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur "
+"adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit "
+"Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor "
+"sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur "
+"adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit"
+
+#: .\tasks\templates\procedure_detail.html:81
+#: .\tasks\templates\procedure_detail1.html:74
+#: .\tasks\templates\production\order_completed.html:86
+#: .\tasks\templates\production\work_sequence.html:39
+#: .\tasks\templates\production\work_step.html:359
+#: .\tasks\templates\verify_components.html:187
+msgid "Précédent"
+msgstr "Previous"
+
+#: .\tasks\templates\procedure_detail1.html:15
+msgid "Outils requis"
+msgstr "Required tools"
+
+#: .\tasks\templates\procedure_detail1.html:23
+#: .\tasks\templates\procedure_detail1.html:26
+msgid "Nom de l'article"
+msgstr "Item name"
+
+#: .\tasks\templates\procedure_detail1.html:24
+#: .\tasks\templates\procedure_detail1.html:27
+msgid "Quantité"
+msgstr "Quantity"
+
+#: .\tasks\templates\procedure_detail1.html:25
+#: .\tasks\templates\procedure_detail1.html:28
+msgid "Image"
+msgstr "Image"
+
+#: .\tasks\templates\procedure_detail1.html:54
+msgid "Aucun outil enregistré."
+msgstr "No tools registered."
+
+#: .\tasks\templates\production\defect_form.html:13
+msgid "Sélectionnez l'article défectueux"
+msgstr "Select the Defective Item"
+
+#: .\tasks\templates\production\defect_form.html:25
+msgid "There are no parts associated with the product"
+msgstr "There are no parts associated with the product"
+
+#: .\tasks\templates\production\defect_form.html:39
+#: .\tasks\templates\production\defect_form.html:74
+msgid "NCR:"
+msgstr "NCR:"
+
+#: .\tasks\templates\production\defect_form.html:44
+msgid "Item ID:"
+msgstr "Item ID:"
+
+#: .\tasks\templates\production\defect_form.html:60
+#, fuzzy
+#| msgid "Selected Item"
+msgid " Selected Item"
+msgstr "Selected Item"
+
+#: .\tasks\templates\production\defect_form.html:65
+msgid "PO Number:"
+msgstr "PO Number:"
+
+#: .\tasks\templates\production\defect_form.html:69
+msgid "Quantité rejeté:"
+msgstr "Rejected quantity:"
+
+#: .\tasks\templates\production\defect_form.html:84
+msgid "Type de Défaut:"
+msgstr "Defect type:"
+
+#: .\tasks\templates\production\defect_form.html:86
+msgid "-- Sélectionner un défaut --"
+msgstr "-- Select a defect --"
+
+#: .\tasks\templates\production\defect_form.html:87
+#: .\tasks\templates\production\partials\_defect_form_fields.html:10
+msgid "Pièce manquante"
+msgstr "Missing part"
+
+#: .\tasks\templates\production\defect_form.html:88
+msgid "Mauvais article"
+msgstr "Wrong item"
+
+#: .\tasks\templates\production\defect_form.html:89
+msgid "Article endommagé"
+msgstr "Damaged item"
+
+#: .\tasks\templates\production\defect_form.html:90
+#: .\tasks\templates\production\partials\_defect_form_fields.html:11
+msgid "Autre"
+msgstr "Other"
+
+#: .\tasks\templates\production\defect_form.html:96
+msgid "Veuillez préciser :"
+msgstr "Please specify:"
+
+#: .\tasks\templates\production\defect_form.html:98
+#, fuzzy
+#| msgid "Décrire le défaut"
+msgid " Décrire le défaut"
+msgstr "Describe the defect"
+
+#: .\tasks\templates\production\defect_form.html:102
+msgid "Non Conformité:"
+msgstr "Non-conformity:"
+
+#: .\tasks\templates\production\defect_form.html:112
+msgid "Date Submitted:"
+msgstr "Date submitted:"
+
+#: .\tasks\templates\production\defect_form.html:114
+msgid "Annuler"
+msgstr "Cancel"
+
+#: .\tasks\templates\production\defect_form.html:116
+#, fuzzy
+#| msgid "Imprimer le billet"
+msgid "Imprimer et Soumettre"
+msgstr "Print and Submit"
+
+#: .\tasks\templates\production\order_completed.html:15
+msgid "Commande terminée"
+msgstr "Order completed"
+
+#: .\tasks\templates\production\order_completed.html:16
+msgid "La commande a été traitée avec succès."
+msgstr "The order was successfully processed."
+
+#: .\tasks\templates\production\order_completed.html:18
+msgid "Travail en cours"
+msgstr "Work in progress"
+
+#: .\tasks\templates\production\order_completed.html:19
+msgid "Le travail n'est pas encore terminé."
+msgstr "The work is not yet finished."
+
+#: .\tasks\templates\production\order_completed.html:27
+msgid "Résumé de la Production"
+msgstr "Production summary"
+
+#: .\tasks\templates\production\order_completed.html:35
+msgid "ID de la commande"
+msgstr "Order ID"
+
+#: .\tasks\templates\production\order_completed.html:39
+msgid "Numéro du lot"
+msgstr "Batch number"
+
+#: .\tasks\templates\production\order_completed.html:43
+msgid "Quantité complétée"
+msgstr "Completed quantity"
+
+#: .\tasks\templates\production\order_completed.html:51
+msgid "Date"
+msgstr "Date"
+
+#: .\tasks\templates\production\order_completed.html:55
+msgid "Temps écoulé"
+msgstr "Elapsed time"
+
+#: .\tasks\templates\production\order_completed.html:59
+msgid "Responsable"
+msgstr "Supervisor"
+
+#: .\tasks\templates\production\order_completed.html:71
+msgid "Résumé final"
+msgstr "Final summary"
+
+#: .\tasks\templates\production\order_completed.html:95
+msgid "Sortir"
+msgstr "Exit"
+
+#: .\tasks\templates\production\partials\_defect_form_fields.html:8
+msgid "Mauvais assemblage"
+msgstr "Wrong assembly"
+
+#: .\tasks\templates\production\partials\_defect_form_fields.html:9
+msgid "Dommages physiques"
+msgstr "Physical damage"
+
+#: .\tasks\templates\production\partials\_defect_form_fields.html:16
+msgid "Numéro de pièce affectée"
+msgstr "Affected part number"
+
+#: .\tasks\templates\production\partials\_defect_form_fields.html:20
+msgid "Remarques (optionnel)"
+msgstr "Remarks (optional)"
+
+#: .\tasks\templates\production\partials\_supervisor_auth.html:4
+msgid "Nom d'utilisateur"
+msgstr "Username"
+
+#: .\tasks\templates\production\partials\_supervisor_auth.html:9
+#: .\tasks\templates\production\work_step.html:170
+msgid "Mot de passe"
+msgstr "Password"
+
+#: .\tasks\templates\production\partials\_timer.html:9
+#: .\tasks\templates\production\partials\_timer.html:92
+msgid "Pause"
+msgstr "Pause"
+
+#: .\tasks\templates\production\partials\_timer.html:18
+msgid "Vous êtes là ?"
+msgstr "Are you there?"
+
+#: .\tasks\templates\production\partials\_timer.html:19
+msgid "Revenez quand vous êtes prêt·e 😊"
+msgstr "Come back when you are ready 😊"
+
+#: .\tasks\templates\production\partials\_timer.html:20
+msgid "Je suis là"
+msgstr "I'm here"
+
+#: .\tasks\templates\production\partials\_timer.html:92
+#: .\tasks\templates\production\partials\_timer.html:113
+msgid "Démarrer"
+msgstr "Start"
+
+#: .\tasks\templates\production\partials\_timer.html:102
+msgid "Pause."
+msgstr "Pause."
+
+#: .\tasks\templates\production\partials\_timer.html:105
+msgid ""
+"Pause automatique pour le déjeuner. Reprenez manuellement à votre retour."
+msgstr "Automatic lunch break. Resume manually upon your return."
+
+#: .\tasks\templates\production\partials\_timer.html:108
+msgid "Fin de la journée. Le minuteur s'est arrêté."
+msgstr "End of the day. The timer has stopped."
+
+#: .\tasks\templates\production\step_detail.html:8
+msgid "Instructions spéciales pour l'étape 1 :"
+msgstr "Special instructions for step 1:"
+
+#: .\tasks\templates\production\step_detail.html:16
+msgid ""
+"Installer un ME bridé sur un pot sanitaire et marquer la bride au sharpie "
+"côté RTD."
+msgstr ""
+"Install a clamped ME on a sanitary pot and mark the clamp with a sharpie on "
+"the RTD side."
+
+#: .\tasks\templates\production\step_detail.html:20
+msgid "Magnet Pot"
+msgstr "Magnet Pot"
+
+#: .\tasks\templates\production\step_detail.html:30
+msgid ""
+"Prendre un KimWipe et nettoyer le top du ME à l'alcool <em>(figure 1)</em>."
+msgstr ""
+"Take a KimWipe and clean the top of the ME with alcohol <em>(figure 1)</em>."
+
+#: .\tasks\templates\production\step_detail.html:34
+msgid "KimWipe"
+msgstr "KimWipe"
+
+#: .\tasks\templates\production\step_detail.html:44
+msgid "Installer le magnet avec la Jig XXXXXXX <em>(figure 2)</em>."
+msgstr "Install the magnet with the Jig XXXXXXX <em>(figure 2)</em>."
+
+#: .\tasks\templates\production\step_detail.html:48
+msgid "Magnet Jig"
+msgstr "Magnet Jig"
+
+#: .\tasks\templates\production\step_detail.html:57
+msgid "Instructions pour l'étape 2 :"
+msgstr "Instructions for step 2:"
+
+#: .\tasks\templates\production\step_detail.html:58
+msgid "Assurez-vous que le capteur est bien positionné."
+msgstr "Make sure the sensor is properly positioned."
+
+#: .\tasks\templates\production\step_detail.html:62
+msgid "Image de l\\"
+msgstr "Image of the\\"
+
+#: .\tasks\templates\production\step_detail.html:65
+msgid "Fermer cette page"
+msgstr "Close this page"
+
+#: .\tasks\templates\production\step_detail.html:66
+msgid ""
+"Si le bouton ne fonctionne pas, vous pouvez fermer cet onglet manuellement."
+msgstr "If the button doesn't work, you can manually close this tab."
+
+#: .\tasks\templates\production\work_sequence.html:17
+#, python-format
+msgid "Séquence de travail pour la commande %(order.order_id)s"
+msgstr "Work sequence for order %(order.order_id)s"
+
+#: .\tasks\templates\production\work_sequence.html:21
+#, python-format
+msgid "Étape %(step.step_number)s : %(step.title)s"
+msgstr "Step %(step.step_number)s: %(step.title)s"
+
+#: .\tasks\templates\production\work_step.html:21
+#: .\tasks\templates\verify_components.html:37
+msgid "Commande en cours"
+msgstr "Order in progress"
+
+#: .\tasks\templates\production\work_step.html:34
+#: .\tasks\templates\verify_components.html:50
+msgid "Date limite"
+msgstr "Deadline"
+
+#: .\tasks\templates\production\work_step.html:55
+msgid "Validación de Usuario"
+msgstr ""
+
+#: .\tasks\templates\production\work_step.html:59
+msgid "Código de Bobine (B...)"
+msgstr ""
+
+#: .\tasks\templates\production\work_step.html:65
+msgid "Código de Assemblage (N...)"
+msgstr ""
+
+#: .\tasks\templates\production\work_step.html:76
+msgid "Étape"
+msgstr "Step"
+
+#: .\tasks\templates\production\work_step.html:85
+#, fuzzy
+#| msgid "Description de l'étape"
+msgid "Description"
+msgstr "Step description"
+
+#: .\tasks\templates\production\work_step.html:90
+msgid "SÉQUENCE DE TRAVAIL"
+msgstr "WORK SEQUENCE"
+
+#: .\tasks\templates\production\work_step.html:132
+msgid "Unité actuelle :"
+msgstr "Current unit:"
+
+#: .\tasks\templates\production\work_step.html:136
+#, fuzzy
+#| msgid "Étape complétée"
+msgid "Complétée"
+msgstr "Completed"
+
+#: .\tasks\templates\production\work_step.html:138
+#: .\tasks\templates\production\work_step.html:154
+msgid "Unité(s)"
+msgstr "Unit(s)"
+
+#: .\tasks\templates\production\work_step.html:158
+#, fuzzy
+#| msgid "-- Sélectionner un défaut --"
+msgid "Signaler un défaut"
+msgstr "Report a defect"
+
+#: .\tasks\templates\production\work_step.html:166
+msgid "Superviseur"
+msgstr "Supervisor"
+
+#: .\tasks\templates\production\work_step.html:174
+#, fuzzy
+#| msgid "ID de la commande"
+msgid "Rouvrir la commande"
+msgstr "Reopen order"
+
+#: .\tasks\templates\verify_components.html:32
+msgid "Vérification de la quantité de composants"
+msgstr "Component quantity verification"
+
+#: .\tasks\templates\verify_components.html:69
+msgid "Nom d'utilisateur admin"
+msgstr "Admin username"
+
+#: .\tasks\templates\verify_components.html:73
+msgid "Mot de passe admin"
+msgstr "Admin password"
+
+#: .\tasks\templates\verify_components.html:77
+msgid "Nouvelle quantité"
+msgstr "New quantity"
+
+#: .\tasks\templates\verify_components.html:81
+msgid "Modifier la quantité"
+msgstr "Modify quantity"
+
+#: .\tasks\templates\verify_components.html:167
+msgid "Erreur lors de la vérification du composant."
+msgstr "Error during component verification."
+
+#: .\tasks\templates\verify_components.html:170
+msgid "Erreur réseau lors de la vérification du composant."
+msgstr "Network error during component verification."
+
+#: .\tasks\views.py:34
+#, fuzzy
+#| msgid "La commande n’existe pas."
+msgid "La commande ne existe pas."
+msgstr "The order does not exist."
+
+#: .\tasks\views.py:52
+msgid "La commande n’existe pas."
+msgstr "The order does not exist."
+
+#: .\tasks\views.py:113
+msgid "Composant marqué comme sélectionné"
+msgstr "Component marked as selected"
+
+#: .\tasks\views.py:116
+msgid "Le composant était déjà sélectionné; pas de changement"
+msgstr "The component was already selected; no change"
+
+#: .\tasks\views.py:120
+msgid "Erreur dans toggle_component"
+msgstr "Error in toggle_component"
+
+#: .\tasks\views.py:166
+msgid "Le numéro d'employé est invalide."
+msgstr "The employee number is invalid."
+
+#: .\tasks\views.py:238
+#, python-format
+msgid "Défaut signalé - Ordre %(order_id)s, Étape %(step_number)s"
+msgstr "Defect reported - Order %(order_id)s, Step %(step_number)s"
+
+#: .\tasks\views.py:241
+#, python-format
+msgid ""
+"Un défaut a été signalé :\n"
+"\n"
+"Ordre : %(order_id)s\n"
+"Étape : %(step_number)s\n"
+"Type de défaut : %(defect_type)s\n"
+"Quantité : %(unit_number)s\n"
+"Part number : %(part_number)s\n"
+"Notes : %(notes)s\n"
+"Signalé par : %(username)s\n"
+"Date : %(timestamp)s\n"
+msgstr ""
+"A defect has been reported:\n"
+"\n"
+"Order: %(order_id)s\n"
+"Step: %(step_number)s\n"
+"Defect type: %(defect_type)s\n"
+"Quantity: %(unit_number)s\n"
+"Part number: %(part_number)s\n"
+"Notes: %(notes)s\n"
+"Reported by: %(username)s\n"
+"Date: %(timestamp)s\n"
+
+#: .\tasks\views.py:265
+#, python-format
+msgid "Défaut signalé, mais l'envoi de l'email a échoué : %(error)s"
+msgstr "Defect reported, but sending email failed: %(error)s"
+
+#: .\tasks\views.py:267
+msgid "Défaut signalé avec succès."
+msgstr "Defect reported successfully."
+
+#: .\tasks\views.py:539
+msgid "Défaut signalé"
+msgstr "Defect reported"
+
+#: .\tasks\views.py:567
+#, python-format
+msgid "⚠️ Composant '%(composant)s' introuvable dans ce CodeItem."
+msgstr "Component '%(composant)s' not found in this CodeItem."
+
+#: .\tasks\views.py:580
+msgid "✅ Numéros de série enregistrés avec succès."
+msgstr "Serial numbers successfully registered."
+
+#: .\tasks\views.py:719
+msgid "La commande a été rouverte avec succès."
+msgstr "The order has been successfully reopened."
+
+#: .\tasks\views.py:723
+msgid "Identifiants du superviseur invalides."
+msgstr "Invalid supervisor credentials."
+
+#: .\tasks\views.py:749
+msgid "La quantité doit être un nombre positif."
+msgstr "Quantity must be a positive number."
+
+#: .\tasks\views.py:754
+msgid "Quantité modifiée avec succès."
+msgstr "Quantity successfully modified."
+
+#: .\tasks\views.py:757
+msgid "Quantité invalide."
+msgstr "Invalid quantity."
+
+#: .\tasks\views.py:761
+msgid "Identifiants admin incorrects."
+msgstr "Incorrect admin credentials."
+
+#~ msgid "Create Defect Ticket"
+#~ msgstr "Create defect ticket"
+
+#~ msgid "Changer la langue"
+#~ msgstr "Change language"

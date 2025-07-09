@@ -1,0 +1,88 @@
+{% extends 'base.html' %} {# Hérite de la template de base #}
+{% load i18n %}
+{% load static %} {# Permet de charger les fichiers statiques (images, CSS, JS, etc.) #}
+{% block extra_style %}
+{# Espace réservé pour ajouter du style CSS spécifique si nécessaire #}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div id="section2">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header text-center text-uppercase fw-bold">
+                        {% trans "Outils requis" %} {# Texte visible à traduire #}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        {# Colonnes visibles, à traduire #}
+                                        <th>{% trans "Nom de l'article" %}</th>
+                                        <th>{% trans "Quantité" %}</th>
+                                        <th>{% trans "Image" %}</th>
+                                        <th>{% trans "Nom de l'article" %}</th>
+                                        <th>{% trans "Quantité" %}</th>
+                                        <th>{% trans "Image" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {# Boucle sur les outils liés à la procédure #}
+                                    {% for tool in procedure.tool_items.all %}
+                                        {% if forloop.counter0|divisibleby:2 %}
+                                            <tr>
+                                        {% endif %}
+
+                                        {# Données de l'outil, ne pas traduire (données dynamiques) #}
+                                        <td>{{ tool.name }}</td>
+                                        <td>{{ tool.quantity }}</td>
+                                        <td>
+                                            {% if tool.image %}
+                                                <img src="{{ tool.image.url }}" alt="{{ tool.name }}" class="img-fluid" style="max-width:100px;">
+                                            {% else %}
+                                                &mdash; {# Tiret long si pas d'image, ne pas traduire #}
+                                            {% endif %}
+                                        </td>
+
+                                        {% if forloop.counter|divisibleby:2 or forloop.last %}
+                                            </tr>
+                                        {% endif %}
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">{% trans "Aucun outil enregistré." %}</td> {# Message visible, à traduire #}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="row">
+    <!-- Lien vers la page précédente -->
+    <div class="col-2" id="div4">
+        <a href="{% url 'procedure_detail' order.codeitem.procedure.id %}" class="btn btn-link text-decoration-none" style="color: white;">
+            <i class="bi bi-arrow-left-circle fs-3 me-2"></i>
+            <span>{% trans "Précédent" %}</span> {# Texte bouton à traduire #}
+        </a>
+    </div>
+    <!-- Colonne vide centrale (peut servir pour du contenu futur) -->
+    <div class="col-8" id="div5"></div> 
+
+    <!-- Lien vers la page suivante -->
+    <div class="col-2" id="div6">
+        <a href="{% url 'verify_components' order.order_id %}" class="btn btn-link text-decoration-none" style="color: white;">            
+            <span>{% trans "Suivant" %}</span> {# Texte bouton à traduire #}
+            <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

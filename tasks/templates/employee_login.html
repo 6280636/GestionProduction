@@ -1,0 +1,28 @@
+{% extends 'base.html' %} {# Hérite de la template de base #}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-4 offset-md-4 mt-5">
+    <!-- Formulaire de connexion centré avec Bootstrap -->
+    <form method="post" class="card card-body" autocomplete="off">
+      {% csrf_token %} {# Protection contre les attaques CSRF #}
+      <h1 class="text-center">{% trans "Connexion" %}</h1> {# Titre visible à traduire #}     
+
+      <div class="mb-3">
+        {% if form.employee_number.errors %}
+          <!-- Affiche les erreurs de validation sur employee_number -->
+          <div class="alert alert-danger">
+            {{ form.employee_number.errors }} {# Les erreurs sont dynamiques, supposées déjà traduites #}
+          </div>
+        {% endif %}
+        <!-- Label commenté, on pourrait le réactiver pour l’accessibilité -->
+        
+        {{ form.employee_number }}  {# Champ du formulaire, label inclus dans le widget #}
+      </div>
+
+      <button class="btn btn-primary" type="submit">{% trans "Se connecter" %}</button> {# Bouton à traduire #}
+    </form>
+  </div>
+</div>
+{% endblock %}

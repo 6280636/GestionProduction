@@ -1,0 +1,268 @@
+{% extends 'base.html' %} {# Hérite de la template de base #}
+{% load static i18n %} {# Charge les fichiers statiques (images, CSS, JS, etc.) et le module i18n #}
+
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'tasks/css/defect_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Colonne gauche : liste des composants à sélectionner -->
+        <div class="col-md-4 item-list">
+            <h6 style="text-align: left;">{% trans "Sélectionnez l'article défectueux" %}</h6>
+
+            {% for component in components %}
+            <button type="button" class="item-btn" data-part-number="{{ component.item_id }}"
+                data-part-name="{{ component.name }}">
+                <img src="{{ component.image.url }}" alt="{{ component.name }}" />
+                <div>
+                    <div>{{ component.name }}</div>
+                    <div class="item-id">{{ component.item_id }}</div>
+                </div>
+            </button>
+            {% empty %}
+            <p>{% trans "There are no parts associated with the product" %}</p>
+            {% endfor %}
+        </div>
+
+        <!-- Colonne droite : formulaire de déclaration -->
+        <div class="col-md-8 form-section">
+            <form id="defect-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- En-tête du ticket avec code QR -->
+                <div class="form-row">
+                    <div class="form-left">
+                        <div id="print-area">
+                            <div id="qrcode"></div>
+                            <div id="ncr-label">{% trans "NCR:" %}</div>
+                        </div>
+                    </div>
+                    <div class="form-right">
+                        <div class="item-id-box">
+                            {% trans "Item ID:" %}
+                            <span id="selected-item-id" style="display: inline-block; min-width: 150px;">---</span>
+                            <input type="hidden" name="part_number" id="hidden-item-id"
+                                value="{{ form.part_number.value }}" />
+                            <div style="color: red; font-size: 0.75em; margin-top: 0.2em;">
+                                {% if form.part_number.errors %}
+                                {{ form.part_number.errors.as_ul }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image sélectionnée + champs de saisie principaux -->
+                <div class="form-row">
+                    <div class="form-left selected-image">
+                        <img id="selected-image" src="placeholder.jpg" alt="{% trans " Selected Item" %}" />
+                    </div>
+
+                    <div class="form-right aligned-inputs">
+                        <div class="form-group">
+                            <label for="po_number">{% trans "PO Number:" %}</label>
+                            <input type="text" name="po_number" id="po_number" value="{{ order.order_id }}" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.quantity.id_for_label }}">{% trans "Quantité rejeté:" %}</label>
+                            {{ form.unit_number }}
+                            {{ form.unit_number.errors }}
+                        </div>
+                        <div class="form-group">
+                            <label for="ncr">{% trans "NCR:" %}</label>
+                            <input type="text" name="ncr" id="ncr" value="23086" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Type de défaut + commentaire -->
+                <div class="form-row">
+                    <div class="form-full">
+                        <div class="form-group">
+                            <label for="id_defect_type">{% trans "Type de Défaut:" %}</label>
+                            <select name="defect_type" id="id_defect_type" class="form-control" required>
+                                <option value="">{% trans "-- Sélectionner un défaut --" %}</option>
+                                <option value="manquante">{% trans "Pièce manquante" %}</option>
+                                <option value="Mauvais article">{% trans "Mauvais article" %}</option>
+                                <option value="Article endommagé">{% trans "Article endommagé" %}</option>
+                                <option value="Autre">{% trans "Autre" %}</option>
+                            </select>
+                        </div>
+
+                        <!-- Champ conditionnel pour "Autre" -->
+                        <div class="form-group" id="autre_field" style="display: none;">
+                            <label for="autre_input">{% trans "Veuillez préciser :" %}</label>
+                            <input type="text" name="defect_type_autre" id="autre_input" class="form-control"
+                                placeholder="{% trans " Décrire le défaut" %}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}">{% trans "Non Conformité:" %}</label>
+                            {{ form.notes }}
+                            {{ form.notes.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d’action -->
+                <div class="form-right">
+                    <div class="submission">
+                        <p>{% trans "Date Submitted:" %}<br /><strong>{% now "Y-m-d" %}</strong></p>                         
+                        <a href="{% url 'work_step_view' order.order_id step.step_number %}"
+                            class="btn btn-secondary">{% trans "Annuler" %}</a>
+                        <button id="btn-submit-print" type="button" class="btn btn-danger">
+                            🖨️ {% trans "Imprimer et Soumettre" %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Bibliothèque pour générer le QR code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- Script pour communiquer avec l’imprimante Zebra -->
+<script src="{% static 'js/BrowserPrint-3.1.250.min.js' %}"></script>
+
+<script>
+    // Variables globales
+    let partNumberInput, quantityInput, defectTypeSelect, autreInput;
+
+    // 🔄 Met à jour le code QR à l'écran
+    function updateQR() {
+        const partNumber = partNumberInput?.value.trim() || "";
+        const quantity = quantityInput?.value.trim() || "";
+        const ncr = document.getElementById('ncr')?.value.trim() || "";
+
+        let defectType = defectTypeSelect?.value.trim() || "";
+        if (defectType === "Autre" && autreInput) {
+            defectType = autreInput.value.trim();
+        }
+
+        const qrData = `NCR: ${ncr}\nPartNumber: ${partNumber}\nQuantity: ${quantity}\nDefect: ${defectType}`;
+        const qrContainer = document.getElementById('qrcode');
+
+        if (qrContainer) {
+            qrContainer.innerHTML = "";
+            if (partNumber || ncr) {
+                new QRCode(qrContainer, {
+                    text: qrData,
+                    width: 200,
+                    height: 200,
+                });
+
+                const ncrLabel = document.getElementById('ncr-label');
+                if (ncrLabel) {
+                    ncrLabel.textContent = `NCR: ${ncr}`;
+                }
+            }
+        }
+    }
+
+    // 🖨️ Imprime et soumet le formulaire
+    function submitAndPrint() {
+        const form = document.getElementById("defect-form");
+
+        const partNumber = document.getElementById('hidden-item-id')?.value.trim() || "";
+        const quantity = document.getElementById('id_quantity')?.value.trim() || "";
+        const ncr = document.getElementById('ncr')?.value.trim() || "";
+
+        let defectType = document.getElementById('id_defect_type')?.value.trim() || "";
+        if (defectType === "Autre") {
+            defectType = document.getElementById('id_defect_type_autre')?.value.trim() || "";
+        }
+
+        const zpl = `
+            ^XA
+            ^PW300
+            ^LL300
+            ^FO100,50
+            ^BQN,2,3
+            ^FDLA,NCR:${ncr}\\nPN:${partNumber}\\nQTY:${quantity}\\nDF:${defectType}^FS
+            ^XZ`;
+
+        console.log({ partNumber, quantity, ncr, defectType });
+
+        if (typeof BrowserPrint !== "undefined") {
+            BrowserPrint.getDefaultDevice("printer", function (printer) {
+                if (!printer) {
+                    alert("❌ Aucune imprimante détectée. Envoi du formulaire...");
+                    form.requestSubmit();
+                    return;
+                }
+
+                printer.send(zpl,
+                    function success() {
+                        console.log("✅ Étiquette imprimée. Soumission du formulaire...");
+                        form.requestSubmit();
+                    },
+                    function error(err) {
+                        alert("❌ Erreur lors de l'impression : " + err);
+                        form.requestSubmit();
+                    }
+                );
+            });
+        } else {
+            alert("⚠️ BrowserPrint non disponible. Envoi du formulaire...");
+            form.requestSubmit();
+        }
+    }
+
+    // ⚙️ Initialisation lorsque le DOM est chargé
+    document.addEventListener('DOMContentLoaded', function () {
+        defectTypeSelect = document.getElementById("id_defect_type");
+        partNumberInput = document.getElementById('hidden-item-id');
+        quantityInput = document.getElementById('id_quantity');
+        autreInput = document.getElementById("id_defect_type_autre");
+        const autreInputDiv = document.getElementById("autre_field");
+
+        // Bouton personnalisé
+        const btnSubmit = document.getElementById("btn-submit-print");
+        if (btnSubmit) {
+            btnSubmit.addEventListener("click", submitAndPrint);
+        }
+
+        // Sélection d'article
+        document.querySelectorAll('.item-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.partNumber;
+                const imgUrl = btn.querySelector('img')?.src || "";
+
+                if (id) {
+                    document.getElementById('selected-item-id').textContent = id;
+                    document.getElementById('hidden-item-id').value = id;
+                }
+
+                if (imgUrl) {
+                    document.getElementById('selected-image').src = imgUrl;
+                }
+
+                updateQR();
+            });
+        });
+
+        // Affiche ou masque le champ "Autre" selon la sélection
+        if (defectTypeSelect && autreInputDiv) {
+            defectTypeSelect.addEventListener("change", function () {
+                autreInputDiv.style.display = (this.value === "Autre") ? "block" : "none";
+                updateQR();
+            });
+
+            autreInputDiv.style.display = (defectTypeSelect.value === "Autre") ? "block" : "none";
+        }
+
+        // Met à jour le QR code en cas de changement de valeur
+        quantityInput?.addEventListener('input', updateQR);
+        partNumberInput?.addEventListener('input', updateQR);
+        autreInput?.addEventListener('input', updateQR);
+
+        updateQR(); // Génère le QR code au chargement
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}  {# Hérite de la base HTML du projet #}
+{% load i18n %}
+{% load static %} {# Permet de charger les fichiers statiques (images, CSS, JS, etc.) #}
+{% block extra_style %}
+{# Espace réservé pour ajouter du style CSS spécifique si nécessaire #}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div id="section1">
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-uppercase text-center mb-4">{% trans "Instructions de travail" %}</h5> {# Titre visible à traduire #}
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <tbody>
+                  <tr class="row-1">
+                    <td class="col-3 align-middle text-center">                      
+                      <img src="{% static 'tasks/images/inkspeclogo.jpg' %}" alt="Inkspec" width="1000" height="1000"
+                        class="img-fluid mt-3"> {# Alt pourrait être traduit si nécessaire #}
+                    </td>
+                    <td class="col-6" colspan="2">
+                      <h6 class="mb-1">{{ procedure.name }}</h6>  {# Nom dynamique, ne pas traduire #}
+                    </td>
+                    <td class="col-3">
+                      <strong>{% trans "Rév :" %}</strong><br>{{ procedure.revision_number }}  {# Étiquette à traduire #}
+                    </td>
+                  </tr>
+
+                  {# Ligne d'informations sur les responsables de la procédure #}
+                  <tr class="row-others">
+                    {% include "_procedure_info_cell.html" with label=_("Préparé par") value=procedure.prepared_by %}
+                    {% include "_procedure_info_cell.html" with label=_("Révisé par") value=procedure.reviewed_by %}
+                    {% include "_procedure_info_cell.html" with label=_("Approuvé par") value=procedure.approved_by %}
+                    <td class="col-6" colspan="2">
+                      <strong>{% trans "Numéro de procédure :" %}</strong><br>{{ procedure.procedure_number }}
+                    </td>
+                  </tr>
+
+                  {# Ligne d'informations sur les dates et numéro d'assemblage #}
+                  <tr class="row-others">
+                    {% include "_procedure_info_cell.html" with label=_("Date de préparation") value=procedure.prepared_date %}
+                    {% include "_procedure_info_cell.html" with label=_("Date de révision") value=procedure.review_date %}
+                    {% include "_procedure_info_cell.html" with label=_("Date d'approbation") value=procedure.approved_date %}
+                    <td class="col-6" colspan="2">
+                      <strong>{% trans "Numéro d'assemblage :" %}</strong><br>{{ procedure.assembly_number }}
+                    </td>
+                  </tr>
+                </tbody>
+
+                <tfoot>
+                  <tr>
+                    <td colspan="4" class="text-center">
+                      <h3 class="mb-1">{% trans "Titre" %}</h3> {# Titre fictif à traduire #}
+                      <p class="mb-0" style="text-align: left;">
+                        {# Texte de description fictif - à remplacer par un vrai texte traduit #}
+                        {% trans "Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit Lorem ipsum dolor sit amet consectetur adipisicing elit" %}
+                      </p>
+                    </td>
+                  </tr>
+                </tfoot>
+
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<!-- Lien vers la page précédente -->
+<div class="row">
+  <div class="col-2" id="div4">
+    <a href="{% url 'order_detail' order.order_id %}" class="btn btn-link text-decoration-none" style="color: white;">
+      <i class="bi bi-arrow-left-circle fs-3 me-2"></i>
+      <span>{% trans "Précédent" %}</span> {# Bouton précédent à traduire #}
+    </a>
+  </div>
+  <!-- Colonne vide centrale (peut servir pour du contenu futur) -->
+  <div class="col-8" id="div5"></div>  
+  <!-- Lien vers la page suivante -->
+  <div class="col-2" id="div6">
+    <a href="{% url 'procedure_detail' procedure.id %}?page=section2" class="btn btn-link text-decoration-none"
+      style="color: white;">
+      {% trans "Suivant" %} <i class="bi bi-arrow-right-circle fs-3 ms-2"></i> {# Bouton suivant à traduire #}
+    </a>
+  </div>
+</div>
+{% endblock %}

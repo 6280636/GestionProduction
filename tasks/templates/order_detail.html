@@ -1,0 +1,92 @@
+{% extends 'base.html' %} {# Hérite de la template de base #}
+{% load i18n %}
+{% block content %}
+
+{# Affiche un message d'erreur si la variable "error" existe #}
+{% if error %}
+<div class="alert alert-danger text-center my-4">
+    {{ error }} {# Le message d'erreur est dynamique, supposé déjà localisé #}
+</div>
+{% endif %}
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div class="col-12 col-md-4 order-2 order-md-1">
+            {# Inclusion du formulaire de recherche, à traduire séparément #}
+            {% include '_order_detail_form.html' %}
+        </div>
+
+        {% if order %}
+        <div class="col-12 col-md-8 order-2 order-md-1" id="selectedOrder">
+            <div class="col text-center text-uppercase mb-5">
+                <h6>{% trans "COMMANDE SÉLECTIONNÉE" %}</h6> {# Titre visible à traduire #}
+            </div>
+
+            <div class="mx-auto order-form-wrapper">
+                {# Affichage des détails principaux de la commande #}
+                <div class="mb-3">
+                    <label class="form-label">{% trans "ID de commande" %}</label> {# Label à traduire #}
+                    <p class="form-control bg-light">{{ order.order_id }}</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans "Quantité requise" %}</label>
+                        <p class="form-control bg-light">{{ order.quantity }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans "Statut de l'ordre de fabrication" %}</label>
+                        <p class="form-control bg-light">{{ order.mo_status }}</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans "Date de commande" %}</label>
+                        <p class="form-control bg-light">{{ order.order_date }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans "Numéro de lot" %}</label>
+                        <p class="form-control bg-light">{{ order.lot_number }}</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">{% trans "Date d'échéance" %}</label>
+                    <p class="form-control bg-light">{{ order.due_date }}</p>
+                </div>
+
+                <!-- {# Lien vers les outils requis si une procédure est liée à l'article de la commande #}
+                {% if order.codeitem and order.codeitem.procedure %}
+                <div class="text-center">
+                    <a href="{% url 'procedure_detail' order.codeitem.procedure.id %}" class="btn btn-success">
+                        {% trans "Outils Requis" %} ▶
+                    </a>
+                </div>
+                {% endif %} -->
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+
+<!-- Bouton “Suivant” uniquement affiché si une procédure existe pour la commande -->
+{% if order and order.codeitem and order.codeitem.procedure %}
+<div class="row">
+    <div class="col-10" id="div5"></div>
+    <div class="col-2" id="div6">
+        <a href="{% url 'procedure_detail' order.codeitem.procedure.id %}" class="btn btn-link text-decoration-none"
+           style="color: white;">
+            <span>{% trans "Suivant" %}</span> {# Bouton suivant à traduire #}
+            <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block user-tools %}
+  {{ block.super }}
+
+  <li style="display: flex; align-items: center; margin-left: 15px;">
+    <form action="{% url 'set_language' %}" method="post" style="display: flex; align-items: center;">
+      {% csrf_token %}
+      <label for="language-select" style="margin-right: 8px; font-weight: bold; color: #4fb2d3;">
+        {% trans "Language" %}:
+      </label>
+      <select id="language-select" name="language" onchange="this.form.submit()"
+        style="
+          padding: 4px 8px;
+          border-radius: 4px;
+          border: 1px solid #ccc;
+          background-color: white;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: border-color 0.3s ease;
+        "
+        onfocus="this.style.borderColor='#66afe9';"
+        onblur="this.style.borderColor='#ccc';"
+      >
+        {% get_current_language as LANGUAGE_CODE %}
+        {% get_available_languages as LANGUAGES %}
+        {% for lang in LANGUAGES %}
+          <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+            {{ lang.1 }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+  </li>
+{% endblock %}
+

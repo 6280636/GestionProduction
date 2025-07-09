@@ -1,0 +1,22 @@
+{# templates/_order_search_form.html #}
+{% load i18n %}
+<div class="col text-center text-uppercase mb-5" id="scanOrder">
+    <!-- Titre : Scanner ou entrer un identifiant de commande -->
+    <h6>{% trans "SCANNER OU SAISIR UN NUMÉRO DE COMMANDE" %}</h6>
+
+    <form action="{% url 'order_search' %}" method="post"
+          class="orderIdFormulaire d-flex flex-column align-items-center">
+        {% csrf_token %}
+        <div class="order-form-wrapper">
+            <!-- Libellé du champ de saisie -->
+            <label class="form-label" for="orderId">{% trans "NUMÉRO DE COMMANDE" %}</label>
+
+            <!-- Champ de saisie pour le numéro de commande -->
+            <input type="text" name="orderId" id="orderId" autocomplete="off" required minlength="4"
+                   maxlength="20" class="form-control mb-3" autofocus>
+
+            <!-- Bouton de soumission -->
+            <button type="submit" class="btn btn-dark w-100">{% trans "VALIDER" %}</button>
+        </div>
+    </form>
+</div>
