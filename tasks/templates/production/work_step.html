@@ -73,7 +73,7 @@
                         <div class="mb-2 text-start">
                             <label for="inputUsuario1" class="form-label mb-1">{% trans "N° de Bobine" %}</label>
                             <input type="text" id="inputUsuario1" class="form-control form-control-sm"
-                                placeholder="Ej: B1234" maxlength="5">
+                                placeholder="Ej: B1234" maxlength="5" autofocus>
                         </div>
 
                         <div class="mb-2 text-start">
@@ -117,7 +117,7 @@
                                 <label class="form-label mb-1">Board#</label>
                                 <input type="text" name="board" class="form-control form-control-sm"
                                     placeholder="Ej: L12-1234-MI" maxlength="20"
-                                    value="{{ request.POST.board|default_if_none:'' }}">
+                                    value="{{ request.POST.board|default_if_none:'' }}" autofocus>
                             </div>
             
                             <div class="mb-2 text-start">
