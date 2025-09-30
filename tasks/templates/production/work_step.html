@@ -11,6 +11,8 @@
 {# Feuilles de style supplémentaires pour cette page #}
 {% block extra_style %}
 <link rel="stylesheet" href="{% static 'tasks/css/work_step.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
 {% endblock %}
 
 {# Contenu principal #}
@@ -64,24 +66,25 @@
                 </div>
 
                 <!-- Formulario Vérification de l'utilisateur -->
-                <div class="col-md-3 d-flex align-items-center ps-2 pe-4">
-                    <div class="border p-3 rounded bg-light w-100">
-                        <div class="status-bar mb-2 text-white text-center py-1" style="background-color: #343a40;">
+                <div class="col-md-4 d-flex align-items-center ps-2 pe-4">
+                    <div class="border p-4 rounded bg-light w-100"> 
+                        <div class="status-bar mb-3 text-white text-center py-2" style="background-color: #343a40; font-size: 1.1rem;">
                             {% trans "Vérification de l'utilisateur" %}
                         </div>
-
-                        <div class="mb-2 text-start d-flex align-items-center">
-                            <label for="inputUsuario1" class="form-label mb-1 me-2" style="width: 80px;">{% trans "N° de Bobine" %}</label>
-                            <input type="text" id="inputUsuario1" class="form-control form-control-sm me-2"
-                                   placeholder="Ej: B1234" maxlength="5" autofocus>
-                            <span id="input1-check" class="checkmark">❌</span>
+                
+                        <div class="mb-3 text-start d-flex align-items-center">
+                            <span class="material-symbols-outlined me-2" style="font-size: 40px;">barcode_reader</span>
+                            <input type="text" id="inputUsuario1" class="form-control form-control-lg me-2"
+                                   placeholder="BXXXX" maxlength="5" autofocus>
+                            <span id="input1-check" class="checkmark" style="font-size: 24px;">❌</span>
                         </div>
                 
-                        <div class="mb-2 text-start d-flex align-items-center">
+                        <div class="mb-3 text-start d-flex align-items-center">
+                            <!-- <span class="material-symbols-outlined me-2" style="font-size: 28px;">barcode_reader</span> -->
                             <label for="inputUsuario2" class="form-label mb-1 me-2" style="width: 80px;">{% trans "N° Me" %}</label>
-                            <input type="text" id="inputUsuario2" class="form-control form-control-sm me-2"
-                                   placeholder="Ej: N4321" maxlength="5">
-                            <span id="input2-check" class="checkmark">❌</span>
+                            <input type="text" id="inputUsuario2" class="form-control form-control-lg me-2"
+                                   placeholder="NXXXX" maxlength="5">
+                            <span id="input2-check" class="checkmark" style="font-size: 24px;">❌</span>
                         </div>
                     </div>
                 </div>
@@ -406,19 +409,42 @@
         return valido1 && valido2;
     }
 
-    // Validar al escribir
-    input1.addEventListener("input", validarCampos);
-    input2.addEventListener("input", validarCampos);
+    // Valider à l'écriture    
+    input1.addEventListener("input", function() {
+        validarCampos();
 
-    // Validación inicial
-    validarCampos();
+        // Mise au point automatique sur l'entrée suivante lorsque l'entrée 1 est remplie
+        if (this.value.length >= this.maxLength) {
+            input2.focus();
+        }
+    });
+    // Forcer input2 à toujours démarrer par N
+    input2.addEventListener("input", function() {
+        // Si l'utilisateur supprime ou ne commence pas par « N », nous le corrigeons
+        if (!this.value.startsWith("N")) {
+            this.value = "N" + this.value.replace(/[^0-9]/g, ""); // seulement les chiffres après N
+        }
 
-    // Al enviar formulario
+        // Limite à N + 4 chiffres
+        if (this.value.length > 5) {
+            this.value = this.value.slice(0, 5);
+        }
+
+        validarCampos();
+    });
+
+    // Initialiser avec « N » lors du chargement
+    if (!input2.value) {
+        input2.value = "N";
+    }
+
+
+    // Lors de la soumission du formulaire
     const form = document.getElementById('formulario');
     if (form) {
         form.addEventListener('submit', function(event) {
             if (!validarCampos()) {
-                event.preventDefault(); // cancela envío si no válido
+                event.preventDefault(); // Copier dans les champs masqués
                 return;
             }
             // Copiar a campos ocultos
