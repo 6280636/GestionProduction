@@ -110,3 +110,15 @@ a.step-link {
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
 }
+
+ /* Vérification de l'utilisateur */
+.checkmark {
+    font-size: 1.2rem;
+    margin-left: 8px;
+}
+.valid {
+    color: green;
+}
+.invalid {
+    color: red;
+}

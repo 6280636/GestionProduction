@@ -80,11 +80,15 @@
 <div class="row">
     <!-- Lien vers la page précédente -->
     <div class="col-2" id="div4">
+        {% if not travail_termine %}
         <a href="{% url 'work_step_view' order.order_id 1 %}" class="btn btn-link text-decoration-none"
             style="color: white;">
             <i class="bi bi-arrow-left-circle fs-3 me-2"></i>
             <span>{% trans "Précédent" %}</span> {# Bouton pour revenir à la première étape #}
         </a>
+        {% else %}
+        <span class="text-muted"><i class="bi bi-arrow-left-circle fs-3 me-2"></i>{% trans "Précédent" %}</span>
+        {% endif %}
     </div>
      <!-- Colonne vide centrale (peut servir pour du contenu futur) -->
     <div class="col-8" id="div5"></div>

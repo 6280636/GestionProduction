@@ -1,6 +1,5 @@
 from cProfile import Profile
 from datetime import datetime, timezone
-
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import render, redirect
@@ -16,6 +15,8 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from collections import Counter
 from django.utils.translation import gettext as _
+import can
+import time
 
 
 def order_detail(request, order_id):
@@ -47,6 +48,10 @@ def order_search(request):
         if order_id:
             try:
                 order = Order.objects.get(order_id=order_id)
+
+                if order.mo_status == 'shipped':
+                    return redirect('order_completed', order_id=order.order_id)
+
             except Order.DoesNotExist:
                 error = _('La commande n’existe pas.')  # ✅ Message traduit
 
@@ -637,7 +642,7 @@ def update_step_progress(request, order_id, step_id):
         ).exists()
 
         # Vérifier si on est à la dernière unité de la commande
-        is_last_unit = current_unit == order.quantity
+        is_last_unit = current_unit + 1 == order.quantity
 
         # Si l'unité est terminée, passer à la suivante ou marquer la commande comme expédiée
         if unit_completed:
@@ -789,3 +794,202 @@ def change_order_quantity(request, order_id):
     # Rediriger vers la page précédente après traitement du formulaire
     return redirect(request.META.get('HTTP_REFERER', '/'))
    
+# ========================================
+# Lecture du Volt et Gain depuis PCAN (Ajax)
+# ========================================
+def read_pcan(request, order_id, step_number):
+    """
+    Vue Ajax pour lire Gain, Volt et ajuster automatiquement le gain.
+    Les actions sont affichées dans le terminal pour debug.
+    """
+    # Configuratión
+    PASSWORD = [0x23, 0x02, 0x23, 0x01, 0x00, 0x5F, 0x37, 0x00]
+    VOLT_TARGET = 3.26
+    VOLT_TOL = 0.01
+    VOLT_PER_GAIN = 0.009
+    WAIT_TIME = 30
+    MAX_GAIN = 255
+    MIN_GAIN = 0
+
+    bus = can.interface.Bus(interface='pcan', channel='PCAN_USBBUS1', bitrate=50000)
+
+    try:
+        # ---------------- Password -----------------
+        print("📤 Envoi d'une demande de mot de passe...", flush=True)
+        msg_pwd_req = can.Message(arbitration_id=0x601, is_extended_id=False,
+                                  data=[0x43, 0x02, 0x23, 0x01, 0x00, 0x00, 0x00, 0x00])
+        bus.send(msg_pwd_req)
+
+        start = time.time()
+        while time.time() - start < 3:
+            msg = bus.recv(timeout=0.5)
+            if msg and msg.arbitration_id == 0x581:
+                print(f"📥 Réponse reçue: {msg.data}", flush=True)
+                break
+
+        msg_pwd_write = can.Message(arbitration_id=0x601, is_extended_id=False, data=PASSWORD)
+        bus.send(msg_pwd_write)
+        print(f"📤 Mot de passe envoyé: {[hex(b) for b in PASSWORD]}", flush=True)
+        time.sleep(0.3)
+
+        # ---------------- Réglage automatique du gain -----------------
+        gain = None
+        volt = None
+        while True:
+            # Lire Gain
+            msg_gain = can.Message(arbitration_id=0x601, is_extended_id=False,
+                                   data=[0x4F, 0x30, 0x21, 0x03, 0x00, 0x00, 0x00, 0x00])
+            bus.send(msg_gain)
+            print("📤 Demande de gain envoyée", flush=True)
+
+            start = time.time()
+            gain_actual = None
+            while time.time() - start < 3:
+                msg = bus.recv(timeout=0.5)
+                if msg and msg.arbitration_id == 0x581 and msg.data[0] == 0x4F:
+                    gain_actual = msg.data[4]
+                    print(f"📥 Gain: {gain_actual}", flush=True)
+                    break
+            if gain_actual is None:
+                print("⚠️ Impossible de lire Gain", flush=True)
+                return JsonResponse({'error': 'Impossible de lire Gain'}, status=500)
+
+            # Lire Voltage
+            msg_volt = can.Message(arbitration_id=0x601, is_extended_id=False,
+                                   data=[0x43, 0x20, 0x22, 0x02, 0x00, 0x00, 0x00, 0x00])
+            bus.send(msg_volt)
+            print("📤 Demande de volt envoyée", flush=True)
+
+            start = time.time()
+            raw_volt = None
+            volt_actual = None
+            while time.time() - start < 5:
+                msg = bus.recv(timeout=0.5)
+                if msg and msg.arbitration_id == 0x581:
+                    raw_volt = msg.data[4] | (msg.data[5] << 8)
+                    volt_actual = raw_volt * 0.001
+                    print(f"📥 Voltage: {volt_actual:.3f} V (RAW={raw_volt})", flush=True)
+                    break
+            if volt_actual is None:
+                print("⚠️ Impossible de lire voltage", flush=True)
+                return JsonResponse({'error': 'Impossible de lire voltage'}, status=500)
+
+            # Évaluer si cela est dans la tolérance
+            diff = VOLT_TARGET - volt_actual
+            if abs(diff) <= VOLT_TOL:
+                gain = gain_actual
+                volt = volt_actual
+                print(f"✅ Volt dans limites de tolérance: {volt_actual:.3f} V", flush=True)
+                break
+
+            # Calculer et écrire un nouveau gain
+            steps = round(diff / VOLT_PER_GAIN)
+            nuevo_gain = gain_actual + steps
+            nuevo_gain = max(MIN_GAIN, min(MAX_GAIN, nuevo_gain))
+            msg_gain_write = can.Message(arbitration_id=0x601, is_extended_id=False,
+                                         data=[0x2F, 0x30, 0x21, 0x03, nuevo_gain & 0xFF, 0x00, 0x00, 0x00])
+            bus.send(msg_gain_write)
+            print(f"🔹 Réglage du gain de {gain_actual} a {nuevo_gain} (steps={steps})", flush=True)
+            print(f"⏱ En attente {WAIT_TIME}s stabiliser...", flush=True)
+            time.sleep(WAIT_TIME)
+
+        # ---------------- Lire temperature -----------------
+        msg_temp = can.Message(arbitration_id=0x601, is_extended_id=False,
+                               data=[0x43, 0x00, 0x22, 0x03, 0x00, 0x00, 0x00, 0x00])
+        bus.send(msg_temp)
+        print("📤 Demande de température envoyée", flush=True)
+        start = time.time()
+        temp = None
+        while time.time() - start < 5:
+            msg = bus.recv(timeout=0.5)
+            if msg and msg.arbitration_id == 0x581:
+                raw_temp = msg.data[4] | (msg.data[5] << 8)
+                temp = raw_temp * 0.001
+                print(f"📥 Temperature: {temp:.1f} °C (RAW={raw_temp})", flush=True)
+                break
+
+        return JsonResponse({
+            'gain': gain,
+            'volt': round(volt, 3) if volt is not None else None,
+            'temperature': round(temp, 1) if temp is not None else None
+        })
+
+    except Exception as e:
+        print(f"❌ Error: {e}", flush=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+    finally:
+        bus.shutdown()
+        print("✅ Bus PCAN fermé", flush=True)
+
+# ========================================
+# Lecture simple du Volt, Gain et Temp
+# ========================================
+def read_pcan_values(request, order_id, step_number):
+    """
+    Vista Ajax para leer los valores iniciales (Gain, Volt, Temp) de la sonda PCAN.
+    """
+
+    try:
+        bus = can.interface.Bus(interface="pcan", channel="PCAN_USBBUS1", bitrate=50000)
+        print("✅ Bus abierto para lectura inicial", flush=True)
+        time.sleep(1.5)  # dejar que el bus se estabilice
+
+        # ---- Gain ----
+        gain = None
+        msg_gain = can.Message(arbitration_id=0x601, is_extended_id=False,
+                               data=[0x4F, 0x30, 0x21, 0x03, 0, 0, 0, 0])
+        bus.send(msg_gain)
+        print("📤 Request Gain enviado")
+        start = time.time()
+        while time.time() - start < 20:
+            msg = bus.recv(timeout=0.5)
+            if msg and msg.arbitration_id == 0x581 and len(msg.data) >= 5:
+                gain = msg.data[4]
+                print(f"📥 Gain recibido: {gain}", flush=True)
+                break
+        time.sleep(0.1)
+
+        # ---- Volt ----
+        volt = None
+        msg_volt = can.Message(arbitration_id=0x601, is_extended_id=False,
+                               data=[0x43, 0x20, 0x22, 0x02, 0, 0, 0, 0])
+        bus.send(msg_volt)
+        print("📤 Request Volt enviado")
+        start = time.time()
+        while time.time() - start < 3:
+            msg = bus.recv(timeout=0.5)
+            if msg and msg.arbitration_id == 0x581 and len(msg.data) >= 6:
+                raw_volt = msg.data[4] | (msg.data[5] << 8)
+                volt = round(raw_volt * 0.001, 3)
+                print(f"📥 Volt recibido: {volt}", flush=True)
+                break
+        time.sleep(0.1)
+
+        # ---- Temp ----
+        temp = None
+        msg_temp = can.Message(arbitration_id=0x601, is_extended_id=False,
+                               data=[0x43, 0x00, 0x22, 0x03, 0, 0, 0, 0])
+        bus.send(msg_temp)
+        print("📤 Request Temp enviado")
+        start = time.time()
+        while time.time() - start < 3:
+            msg = bus.recv(timeout=0.5)
+            if msg and msg.arbitration_id == 0x581 and len(msg.data) >= 6:
+                raw_temp = msg.data[4] | (msg.data[5] << 8)
+                temp = round(raw_temp * 0.001, 1)
+                print(f"📥 Temp recibido: {temp}", flush=True)
+                break
+
+        return JsonResponse({
+            "gain": gain,
+            "volt": volt,
+            "temperature": temp
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+    finally:
+        bus.shutdown()
+        print("✅ Bus cerrado después de lectura", flush=True)

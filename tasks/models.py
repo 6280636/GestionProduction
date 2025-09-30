@@ -4,8 +4,6 @@ from django.utils.translation import gettext as _
 
 # from django.utils.translation import gettext_lazy as _
 
-# Create your models here.
-
 class Profile(models.Model):
     """
     Étend le modèle User avec un numéro d'employé unique.

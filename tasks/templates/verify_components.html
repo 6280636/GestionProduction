@@ -115,64 +115,65 @@
 <!-- Bibliothèque LeaderLine pour tracer des lignes visuelles -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const orderId = "{{ order.order_id }}";
-        const verifyButton = document.getElementById('verifyButton');
+document.addEventListener('DOMContentLoaded', () => {
+    const orderId = "{{ order.order_id }}";
+    const verifyButton = document.getElementById('verifyButton');
+    const verifyForm = document.getElementById('verifyForm');
 
-        // Fonction pour vérifier si tous les composants sont marqués comme vérifiés
-        function checkAllVerified() {
-            const components = document.querySelectorAll('.component-card');
-            return Array.from(components).every(card => card.classList.contains('verified'));
-        }
+    function checkAllVerified() {
+        const components = document.querySelectorAll('.component-card');
+        return Array.from(components).every(card => card.classList.contains('verified'));
+    }
 
-        // Met à jour la visibilité du bouton "Suivant" en fonction de l'état des composants
-        function updateVerifyButton() {
-            if (!verifyButton) return;
-            verifyButton.style.display = checkAllVerified() ? 'inline-block' : 'none';
-        }
+    function updateVerifyButton() {
+        if (!verifyButton) return;
+        verifyButton.disabled = !checkAllVerified();
+    }
 
-        // Ajoute un événement click sur chaque carte composant pour changer son état vérifié
-        document.querySelectorAll('.component-card').forEach(card => {
-            card.addEventListener('click', () => {
-                if (card.classList.contains('verified')) return;
+    document.querySelectorAll('.component-card').forEach(card => {
+        card.addEventListener('click', () => {
+            if (card.classList.contains('verified')) return;
 
-                const componentId = card.id.replace('component-', '');
+            const componentId = card.id.replace('component-', '');
+            fetch(`/orders/${orderId}/toggle_component/${componentId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    card.classList.add('verified', 'bg-success', 'text-white');
 
-                fetch(`/orders/${orderId}/toggle_component/${componentId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        card.classList.add('verified', 'bg-success', 'text-white');
+                    const checkIcon = card.querySelector('.check-icon');
+                    if (checkIcon) checkIcon.style.display = 'inline';
 
-                        const checkIcon = card.querySelector('.check-icon');
-                        if (checkIcon) {
-                            checkIcon.style.display = 'inline';
-                        }
+                    const checkContainer = card.querySelector('.check-container');
+                    if (checkContainer) checkContainer.classList.add('bg-success', 'border-success');
 
-                        const checkContainer = card.querySelector('.check-container');
-                        if (checkContainer) {
-                            checkContainer.classList.add('bg-success', 'border-success');
-                        }
-
-                        updateVerifyButton();
-                    } else if (data.status === 'no_change') {
-                        console.log('Composant déjà sélectionné');
-                    } else {
-                        alert(data.message || '{% trans "Erreur lors de la vérification du composant." %}');
-                    }
-                })
-                .catch(() => alert('{% trans "Erreur réseau lors de la vérification du composant." %}'));
-            });
+                    updateVerifyButton();
+                } else if (data.status === 'no_change') {
+                    console.log('Composant déjà sélectionné');
+                } else {
+                    alert(data.message || '{% trans "Erreur lors de la vérification du composant." %}');
+                }
+            })
+            .catch(() => alert('{% trans "Erreur réseau lors de la vérification du composant." %}'));
         });
-
-        updateVerifyButton();
     });
+
+    // Envía el formulario al hacer clic si el botón está habilitado
+    if (verifyForm) {
+        verifyButton.addEventListener('click', () => {
+            if (!verifyButton.disabled) verifyForm.submit();
+        });
+    }
+
+    updateVerifyButton();
+});
+
 </script>
 {% endblock %}
 
@@ -192,11 +193,19 @@
 
     <div class="col-2" id="div6">
         <!-- Bouton 'Suivant' visible uniquement lorsque tous les composants sont vérifiés -->
-        <a id="verifyButton" href="{% url 'work_sequence' order.order_id %}" class="btn btn-link text-decoration-none"
+        <!-- <a id="verifyButton" href="{% url 'work_sequence' order.order_id %}" class="btn btn-link text-decoration-none"
             style="color: white; display: none;">
             <span>{% trans "Suivant" %}</span>
             <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
-        </a>
+        </a> -->
+        <form id="verifyForm" action="{% url 'work_sequence' order.order_id %}" method="get">
+            <button id="verifyButton" class="btn btn-link text-decoration-none" style="color: white;" disabled>
+                <span>{% trans "Suivant" %}</span>
+                <i class="bi bi-arrow-right-circle fs-3 ms-2"></i>
+            </button>
+        </form>
+        
+        
     </div>
 </div>
 {% endblock %}

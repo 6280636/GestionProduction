@@ -11,7 +11,6 @@ urlpatterns = [
     path('grappelli/', include('grappelli.urls')),
     path('i18n/setlang/', set_language, name='set_language'),
     path('i18n/', include('django.conf.urls.i18n')),
-
     path('admin/', admin.site.urls),
     path('', views.employee_login, name='employee_login'),    
     path('logout/', views.employee_logout, name='logout'),
@@ -37,6 +36,10 @@ urlpatterns = [
          views.toggle_component, name='toggle_component'),
     path('order/<int:order_id>/change_quantity/',
          views.change_order_quantity, name='change_order_quantity'),
+    path('work_step/<int:order_id>/<int:step_number>/read_pcan/',
+          views.read_pcan, name='read_pcan'),
+    path("work_step/<int:order_id>/<int:step_number>/read_pcan_values/",
+         views.read_pcan_values, name="read_pcan_values"), 
     
     ]
 
