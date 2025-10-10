@@ -17,7 +17,8 @@ from collections import Counter
 from django.utils.translation import gettext as _
 import can
 import time
-
+from .pcan_utils import get_bus, bus_lock
+from django.views.decorators.csrf import csrf_exempt
 
 def order_detail(request, order_id):
     """Affiche les détails d'une commande spécifique si la requête est GET."""
@@ -927,69 +928,193 @@ def read_pcan(request, order_id, step_number):
 # ========================================
 def read_pcan_values(request, order_id, step_number):
     """
-    Vista Ajax para leer los valores iniciales (Gain, Volt, Temp) de la sonda PCAN.
+    Vista Ajax para leer Gain, Volt, Temp, Board de la sonda PCAN.
+    Mejor manejo: flush del buffer, matching exacto de respuesta, retries y delays.
     """
-
     try:
-        bus = can.interface.Bus(interface="pcan", channel="PCAN_USBBUS1", bitrate=50000)
-        print("✅ Bus abierto para lectura inicial", flush=True)
-        time.sleep(1.5)  # dejar que el bus se estabilice
+        with bus_lock:
+            bus = get_bus()
+            print("✅ Bus abierto para lectura inicial", flush=True)
 
-        # ---- Gain ----
-        gain = None
-        msg_gain = can.Message(arbitration_id=0x601, is_extended_id=False,
-                               data=[0x4F, 0x30, 0x21, 0x03, 0, 0, 0, 0])
-        bus.send(msg_gain)
-        print("📤 Request Gain enviado")
-        start = time.time()
-        while time.time() - start < 20:
-            msg = bus.recv(timeout=0.5)
-            if msg and msg.arbitration_id == 0x581 and len(msg.data) >= 5:
-                gain = msg.data[4]
-                print(f"📥 Gain recibido: {gain}", flush=True)
-                break
-        time.sleep(0.1)
+            time.sleep(1.0)  # pequeño wait para estabilizar
 
-        # ---- Volt ----
-        volt = None
-        msg_volt = can.Message(arbitration_id=0x601, is_extended_id=False,
-                               data=[0x43, 0x20, 0x22, 0x02, 0, 0, 0, 0])
-        bus.send(msg_volt)
-        print("📤 Request Volt enviado")
-        start = time.time()
-        while time.time() - start < 3:
-            msg = bus.recv(timeout=0.5)
-            if msg and msg.arbitration_id == 0x581 and len(msg.data) >= 6:
-                raw_volt = msg.data[4] | (msg.data[5] << 8)
-                volt = round(raw_volt * 0.001, 3)
-                print(f"📥 Volt recibido: {volt}", flush=True)
-                break
-        time.sleep(0.1)
+            # ---- helper: vaciar buffer de mensajes pendientes ----
+            def flush_incoming():
+                # llamar varias veces con timeout muy pequeño hasta que no haya mensajes
+                while True:
+                    msg = bus.recv(timeout=0.001)
+                    if not msg:
+                        break
+                    print(f"🧹 Flushed mensaje previo: ID={hex(msg.arbitration_id)}, data={msg.data}", flush=True)
 
-        # ---- Temp ----
-        temp = None
-        msg_temp = can.Message(arbitration_id=0x601, is_extended_id=False,
-                               data=[0x43, 0x00, 0x22, 0x03, 0, 0, 0, 0])
-        bus.send(msg_temp)
-        print("📤 Request Temp enviado")
-        start = time.time()
-        while time.time() - start < 3:
-            msg = bus.recv(timeout=0.5)
-            if msg and msg.arbitration_id == 0x581 and len(msg.data) >= 6:
-                raw_temp = msg.data[4] | (msg.data[5] << 8)
-                temp = round(raw_temp * 0.001, 1)
-                print(f"📥 Temp recibido: {temp}", flush=True)
-                break
+            # ---- helper mejorado: enviar y esperar con matching exacto ----
+            def send_and_wait(msg, match_prefix: bytes, parse_fn, retries=20, delay=0.8, timeout=0.8):
+                """
+                match_prefix: bytes a comparar con los primeros bytes de la respuesta (p.ej. b'\\x43\\x03\\x20\\x01')
+                parse_fn: función que recibe el msg y devuelve el valor o None
+                """
+                for attempt in range(1, retries + 1):
+                    flush_incoming()
+                    bus.send(msg)
+                    print(f"📤 Enviado (intento {attempt}): {msg.data}", flush=True)
+                    start = time.time()
+                    while time.time() - start < (timeout * 4):  # ventana total para esperar respuestas
+                        resp = bus.recv(timeout=timeout)
+                        if not resp:
+                            continue
+                        print(f"📥 Recibido: ID={hex(resp.arbitration_id)}, data={resp.data}", flush=True)
 
-        return JsonResponse({
-            "gain": gain,
-            "volt": volt,
-            "temperature": temp
-        })
+                        # comprobar arbitration id
+                        if resp.arbitration_id != 0x581:
+                            print("   -> Ignorado: arbitration_id distinto", flush=True)
+                            continue
+
+                        # comprobar prefix de datos si se indicó
+                        data_bytes = bytes(resp.data)  # convertir para slicing
+                        if match_prefix and not data_bytes.startswith(match_prefix):
+                            print(f"   -> Ignorado: prefix no coincide {data_bytes[:len(match_prefix)]} != {match_prefix}", flush=True)
+                            continue
+
+                        # parsear
+                        val = parse_fn(resp)
+                        if val is not None:
+                            print(f"   -> Parsed OK: {val}", flush=True)
+                            return val
+
+                    print(f"⏱️ Intento {attempt} no obtuvo respuesta válida, esperando {delay}s y reintentando...", flush=True)
+                    time.sleep(delay)
+
+                print("❌ Timeout total: no se obtuvo respuesta válida tras reintentos", flush=True)
+                return None
+
+            # --- Lot (esperamos respuesta con prefix C 0x03 0x20 0x01) ---
+            lot_prefix = bytes([0x43, 0x03, 0x20, 0x01])
+            lot_number = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x43, 0x03, 0x20, 0x01, 0, 0, 0, 0]),
+                match_prefix=lot_prefix,
+                parse_fn=lambda m: int(m.data[4]) if len(m.data) >= 5 else None,
+                retries=20, delay=1, timeout=1
+            )
+
+            # pequeño delay antes de la siguiente petición (ayuda con sondas lentas)
+            time.sleep(0.5)
+
+            # --- Serial Board (prefix C 0x04 0x20 0x01) ---
+            serial_prefix = bytes([0x43, 0x04, 0x20, 0x01])
+            serial_board = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x43, 0x04, 0x20, 0x01, 0, 0, 0, 0]),
+                match_prefix=serial_prefix,
+                parse_fn=lambda m: (m.data[4] | (m.data[5] << 8)) if len(m.data) >= 6 else None,
+                retries=20, delay=1, timeout=1
+            )
+
+            board_string = f"L{lot_number}-{serial_board}" if (lot_number is not None and serial_board is not None) else ""
+
+            # ---- Gain (prefix 0x4F 0x30 0x21 0x03) ----
+            gain_prefix = bytes([0x4F, 0x30, 0x21, 0x03])
+            gain = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x4F, 0x30, 0x21, 0x03, 0, 0, 0, 0]),
+                match_prefix=gain_prefix,
+                parse_fn=lambda m: int(m.data[4]) if len(m.data) >= 5 else None,
+                retries=20, delay=0.3, timeout=0.4
+            )
+
+            # ---- Volt ----
+            volt_prefix = bytes([0x43, 0x20, 0x22, 0x02])
+            volt = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x43, 0x20, 0x22, 0x02, 0, 0, 0, 0]),
+                match_prefix=volt_prefix,
+                parse_fn=lambda m: round((m.data[4] | (m.data[5] << 8)) * 0.001, 3) if len(m.data) >= 6 else None,
+                retries=20, delay=0.2, timeout=0.4
+            )
+
+            # ---- Temp ----
+            temp_prefix = bytes([0x43, 0x00, 0x22, 0x03])
+            temp = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x43, 0x00, 0x22, 0x03, 0, 0, 0, 0]),
+                match_prefix=temp_prefix,
+                parse_fn=lambda m: round((m.data[4] | (m.data[5] << 8)) * 0.001, 1) if len(m.data) >= 6 else None,
+                retries=20, delay=0.2, timeout=0.4
+            )
+
+            print(f"🔚 Resultado: board={board_string}, gain={gain}, volt={volt}, temp={temp}", flush=True)
+
+            return JsonResponse({
+                "gain": gain,
+                "volt": volt,
+                "temperature": temp,
+                "board": board_string
+            })
 
     except Exception as e:
+        print(f"❌ Error en read_pcan_values: {e}", flush=True)
         return JsonResponse({"error": str(e)}, status=500)
 
-    finally:
-        bus.shutdown()
-        print("✅ Bus cerrado después de lectura", flush=True)
+# ========================================
+# Mise a jour chaque second
+# ========================================
+def read_pcan_live(request):
+    """
+    Lee voltaje y temperatura en vivo cada 1-2 segundos.
+    No reinicializa el bus, solo consulta los valores actuales.
+    """
+    try:
+        with bus_lock:
+            bus = get_bus()
+            print("📡 Actualización en vivo...")
+
+            def send_and_wait(msg, parse_fn, timeout=0.5):
+                bus.send(msg)
+                start = time.time()
+                while time.time() - start < 1.0:
+                    resp = bus.recv(timeout=timeout)
+                    if resp:
+                        parsed = parse_fn(resp)
+                        if parsed is not None:
+                            return parsed
+                return None
+
+            # 🔹 Voltaje (0x20, 0x22, 0x02)
+            volt = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x43, 0x20, 0x22, 0x02, 0, 0, 0, 0]),
+                lambda m: round((m.data[4] | (m.data[5] << 8)) * 0.001, 3)
+                if m.arbitration_id == 0x581 and len(m.data) >= 6 else None
+            )
+
+            # 🔹 Temperatura (0x00, 0x22, 0x03)
+            temp = send_and_wait(
+                can.Message(arbitration_id=0x601, is_extended_id=False,
+                            data=[0x43, 0x00, 0x22, 0x03, 0, 0, 0, 0]),
+                lambda m: round((m.data[4] | (m.data[5] << 8)) * 0.001, 1)
+                if m.arbitration_id == 0x581 and len(m.data) >= 6 else None
+            )
+
+            return JsonResponse({
+                "volt": volt,
+                "temperature": temp
+            })
+
+    except Exception as e:
+        print(f"❌ Error en lectura en vivo: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def close_pcan_bus(request):
+    """
+    Cierra el bus PCAN manualmente (llamado desde el frontend cuando el usuario
+    sale de la página del paso 4).
+    """
+    try:
+        shutdown_bus()
+        return JsonResponse({"status": "ok", "message": "Bus cerrado manualmente"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "error": str(e)})
+
+   
+

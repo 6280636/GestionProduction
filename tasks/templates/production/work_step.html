@@ -121,7 +121,7 @@
                             <div class="mb-2 text-start d-flex align-items-center">
                                 <label class="form-label mb-1 me-2" style="width: 80px;">Board#</label>
                                 <input type="text" id="board" name="board" class="form-control form-control-sm me-2"
-                                    placeholder="Ej: L12-1234-MI" pattern=".{11}" minlength="11" maxlength="11" required
+                                    placeholder="Ej: L12-1234-MI" pattern=".{8}" minlength="8" maxlength="8" required
                                     title="Dois avoir 11 caracteres"
                                     value="{{ request.POST.board|default_if_none:'' }}" autofocus>
                                 <span id="board-check" class="checkmark">❌</span>
@@ -475,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Validaciones individuales
     function validateBoard() {
         const val = boardField.value.trim();
-        boardCheck.textContent = (val.length === 11) ? "✅" : "❌";
+        boardCheck.textContent = (val.length === 8) ? "✅" : "❌";
     }
     function validateTemp() {
         const val = parseFloat(tempField.value);
@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     function validateVolt() {
         const val = parseFloat(voltField.value);
-        voltCheck.textContent = (!isNaN(val) && val >= 3.2 && val <= 3.299) ? "✅" : "❌";
+        voltCheck.textContent = (!isNaN(val) && val >= 2 && val <= 3.299) ? "✅" : "❌";
     }
     function validateGain() {
         const val = parseFloat(gainField.value);
@@ -505,12 +505,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Validar en tiempo real todos los campos
-    [boardField, tempField, voltField, gainField].forEach(field => {
-        field.addEventListener("input", () => {
-            validateAll();
-            updateNextButton();
-        });
-    });
+    // [boardField, tempField, voltField, gainField].forEach(field => {
+    //     field.addEventListener("input", () => {
+    //         validateAll();
+    //         updateNextButton();
+    //     });
+    // });
 
     // Inicializar checkmarks y botón al cargar
     validateAll();
@@ -528,12 +528,43 @@ document.addEventListener("DOMContentLoaded", function () {
             tempField.value = data.temperature;
             voltField.value = data.volt;
             gainField.value = data.gain;
+            if (data.board) {
+                boardField.value = data.board;
+                boardCheck.textContent = "✅";
+            }
             status.textContent = "✅ Lecture terminée";
 
             validateAll();
             updateNextButton();
             btn.disabled = false;
         });
+
+    // Función para actualización en vivo
+    function updateLiveData() {
+        fetch("{% url 'read_pcan_live' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    const voltField = document.getElementById("volt");
+                    const tempField = document.getElementById("temperature");
+
+                    if (voltField && data.volt !== null)
+                        voltField.value = data.volt;
+
+                    if (tempField && data.temperature !== null)
+                        tempField.value = data.temperature;
+
+                    console.log(`🔁 Actualizado: Volt=${data.volt}, Temp=${data.temperature}`);
+                } else {
+                    console.warn("⚠️ Error en actualización:", data.error);
+                }
+            })
+            .catch(err => console.error("❌ Error fetch:", err));
+    }
+
+    // Actualiza cada 2 segundos
+    setInterval(updateLiveData, 2000);
+
 
     // Ajustar valores al hacer clic
     btn.addEventListener("click", function () {
