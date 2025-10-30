@@ -152,7 +152,12 @@
                             <div class="mb-2 text-start">
                                 <span id="pcan-status" class="text-info">lecture...</span>
                             </div>
-                    
+                            <!-- 🔍 Bouton pour lire la sonde PCAN -->
+                            <div class="d-grid mt-2">
+                                <button type="button" id="read-sonde-btn" class="btn btn-info btn-sm">
+                                    🔍 Lire les valeurs de la sonde
+                                </button>
+                            </div>
                             <!-- Bouton pour lire la sonde PCAN -->
                             <div class="d-grid mt-2">
                                 <button type="button" id="read-pcan-btn" class="btn btn-primary btn-sm">
@@ -398,9 +403,7 @@
         document.getElementById("input1-check").textContent = valido1 ? "✅" : "❌";
         document.getElementById("input2-check").textContent = valido2 ? "✅" : "❌";
 
-        // if (!valido1) mostrarError('inputUsuario1', 'Ce champ est requis BXXXX');
-        // if (!valido2) mostrarError('inputUsuario2', 'Ce champ est requis NXXXX');
-
+       
         // Habilita o deshabilita botón Next
         if (btnNext) {
             btnNext.disabled = !(valido1 && valido2);
@@ -408,6 +411,10 @@
 
         return valido1 && valido2;
     }
+    // 🔹 Inicializar estado
+    if (btnNext) btnNext.disabled = true;  // botón Next deshabilitado al cargar
+    if (!input2.value) input2.value = "N"; // inicializar input2 con "N"
+    validarCampos();                        // mostrar checks correctamente
 
     // Valider à l'écriture    
     input1.addEventListener("input", function() {
@@ -458,141 +465,131 @@
 {% if step.step_number == 4 and order.codeitem.procedure.procedure_number == "99918-0008-01" %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Campos y checkmarks
-    const btn = document.getElementById("read-pcan-btn");
+    const POLL_MS = 2000;  // cada 3 segundos
+    let timer = null;
+
+    const btnRead = document.getElementById("read-sonde-btn");
+    const btnAdjust = document.getElementById("read-pcan-btn");
+    const status = document.getElementById("pcan-status");
     const boardField = document.getElementById("board");
     const tempField = document.getElementById("temperature");
     const voltField = document.getElementById("volt");
     const gainField = document.getElementById("gain");
-    const status = document.getElementById("pcan-status");
-    const btnNext = document.querySelector('footer form#formulario button[type="submit"]'); 
+    const btnNext = document.querySelector('footer form#formulario button[type="submit"]');
 
     const boardCheck = document.getElementById("board-check");
     const tempCheck = document.getElementById("temperature-check");
     const voltCheck = document.getElementById("volt-check");
     const gainCheck = document.getElementById("gain-check");
 
-    // Validaciones individuales
-    function validateBoard() {
-        const val = boardField.value.trim();
-        boardCheck.textContent = (val.length === 8) ? "✅" : "❌";
-    }
-    function validateTemp() {
-        const val = parseFloat(tempField.value);
-        tempCheck.textContent = (!isNaN(val) && val >= 20 && val <= 30) ? "✅" : "❌";
-    }
-    function validateVolt() {
-        const val = parseFloat(voltField.value);
-        voltCheck.textContent = (!isNaN(val) && val >= 2 && val <= 3.299) ? "✅" : "❌";
-    }
-    function validateGain() {
-        const val = parseFloat(gainField.value);
-        gainCheck.textContent = (!isNaN(val) && val >= 0 && val <= 80) ? "✅" : "❌";
+    // ✅ Validaciones
+    function validateBoard(){ const v = boardField.value.trim(); boardCheck.textContent = (v.length >= 6) ? "✅" : "❌"; }
+    function validateTemp(){ const v = parseFloat(tempField.value); tempCheck.textContent = (!isNaN(v) && v >= 20 && v <= 30) ? "✅" : "❌"; }
+    function validateVolt(){ const v = parseFloat(voltField.value); voltCheck.textContent = (!isNaN(v) && v >= 2.0 && v <= 3.22) ? "✅" : "❌"; }
+    function validateGain(){ const v = parseFloat(gainField.value); gainCheck.textContent = (!isNaN(v) && v >= 0 && v <= 80) ? "✅" : "❌"; }
+    function validateAll(){ validateBoard(); validateTemp(); validateVolt(); validateGain(); }
+    // ✅ Actualizar estado de botones
+    function updateNextButton(){ 
+        const allValid = [boardCheck, tempCheck, voltCheck, gainCheck].every(c => c.textContent === "✅"); 
+        if (btnNext) btnNext.disabled = !allValid; 
     }
 
-    // Validar todos
-    function validateAll() {
-        validateBoard();
-        validateTemp();
-        validateVolt();
-        validateGain();
-    }
+    // ✅ Estado inicial
+    validateAll(); updateNextButton();
+    status.textContent = "⚠️ Connectez la sonde!";
+    status.style.color = "red";
+    status.style.fontWeight = "bold";
+    if (btnNext) btnNext.disabled = true;
+    // 🔹 Deshabilitar btnAdjust al entrar al step 4
+    if (btnAdjust) btnAdjust.disabled = true;
 
-    // Habilitar/deshabilitar Next
-    function updateNextButton() {
-        const allValid = [boardCheck, tempCheck, voltCheck, gainCheck].every(c => c.textContent === "✅");
-        if (btnNext) btnNext.disabled = !allValid;
-    }
+    // 🔁 Función que hace una lectura (reutilizable)
+    function fetchValues(showStatus = false) {
+        if (showStatus) {
+            status.textContent = "🔄 Lecture en cours...";
+            status.style.color = "orange";
+            if (btnAdjust) btnAdjust.disabled = true;  
+        }
 
-    // Validar en tiempo real todos los campos
-    // [boardField, tempField, voltField, gainField].forEach(field => {
-    //     field.addEventListener("input", () => {
-    //         validateAll();
-    //         updateNextButton();
-    //     });
-    // });
-
-    // Inicializar checkmarks y botón al cargar
-    validateAll();
-    updateNextButton();
-    btn.disabled = true;
-
-    // Cargar valores iniciales
-    fetch("{% url 'read_pcan_values' order.id step.step_number %}")
+        fetch("{% url 'live_status' order.id step.step_number %}", {
+            method: "POST",
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
         .then(res => res.json())
         .then(data => {
-            if (data.error) {
-                status.textContent = "❌ Erreur lecture";
-                return;
-            }
-            tempField.value = data.temperature;
-            voltField.value = data.volt;
-            gainField.value = data.gain;
-            if (data.board) {
-                boardField.value = data.board;
-                boardCheck.textContent = "✅";
-            }
-            status.textContent = "✅ Lecture terminée";
+            if (!data.ok) throw new Error(data.error || "Erreur inconnue");
+            const d = data.data;
+
+            boardField.value = d.board || "";
+            tempField.value = d.temp ?? "";
+            voltField.value = d.volt ?? "";
+            gainField.value = d.gain ?? "";
 
             validateAll();
             updateNextButton();
-            btn.disabled = false;
+
+            status.textContent = "✅ Lecture réussie";
+            status.style.color = "green";
+            // 🔹 Habilitar btnAdjust solo después de obtener los valores
+            if (btnAdjust) btnAdjust.disabled = false;
+        })
+        .catch(err => {
+            console.error(err);
+            status.textContent = "❌ Erreur lors de la lecture";
+            status.style.color = "red";
         });
-
-    // Función para actualización en vivo
-    function updateLiveData() {
-        fetch("{% url 'read_pcan_live' %}")
-            .then(response => response.json())
-            .then(data => {
-                if (!data.error) {
-                    const voltField = document.getElementById("volt");
-                    const tempField = document.getElementById("temperature");
-
-                    if (voltField && data.volt !== null)
-                        voltField.value = data.volt;
-
-                    if (tempField && data.temperature !== null)
-                        tempField.value = data.temperature;
-
-                    console.log(`🔁 Actualizado: Volt=${data.volt}, Temp=${data.temperature}`);
-                } else {
-                    console.warn("⚠️ Error en actualización:", data.error);
-                }
-            })
-            .catch(err => console.error("❌ Error fetch:", err));
     }
 
-    // Actualiza cada 2 segundos
-    setInterval(updateLiveData, 2000);
+    // 🔹 Al presionar "Lire les valeurs de la sonde"
+    btnRead.addEventListener("click", function () {
+        btnRead.disabled = true;
+        fetchValues(true);
 
+        // ⏱️ Iniciar actualización automática cada 3s
+        if (!timer) {
+            timer = setInterval(() => fetchValues(false), POLL_MS);
+            console.log("⏱️ Auto-refresh started");
+        }
 
-    // Ajustar valores al hacer clic
-    btn.addEventListener("click", function () {
-        status.textContent = "⚙️ Ajustement en cours...";
-        btn.disabled = true;
+        // Permitir presionar nuevamente por si el usuario quiere reiniciar
+        setTimeout(() => { btnRead.disabled = false; }, 2000);
+    });
 
-        fetch("{% url 'read_pcan' order.id step.step_number %}")
+    // 🔧 Botón Ajuster
+    if (btnAdjust) {
+        btnAdjust.addEventListener("click", function () {
+            btnAdjust.disabled = true;
+            status.textContent = "🔧 Ajustement automatique du gain en cours...";
+
+            fetch("{% url 'read_pcan' order.id step.step_number %}", { method: "GET" })
             .then(res => res.json())
             .then(data => {
-                if (data.error) {
-                    status.textContent = "❌ " + data.error;
-                    btn.disabled = false;
-                    return;
-                }
-                tempField.value = data.temperature;
-                voltField.value = data.volt;
-                gainField.value = data.gain;
-                status.textContent = "✅ Ajustement terminé";
+                if (data.error) throw new Error(data.error);
+                gainField.value = data.gain ?? "";
+                voltField.value = data.volt ?? "";
+                tempField.value = data.temperature ?? "";
+                validateGain(); validateVolt(); validateTemp(); updateNextButton();
 
-                validateAll();
-                updateNextButton();
-                btn.disabled = false;
-            });
+                status.textContent = "✅ Gain ajusté automatiquement";
+                status.style.color = "green";
+            })
+            .catch(err => {
+                console.error(err);
+                status.textContent = "❌ Erreur lors de l’ajustement du gain";
+                status.style.color = "red";
+            })
+            .finally(() => btnAdjust.disabled = false);
+        });
+    }
+
+    // ❌ Detener intervalo al salir
+    window.addEventListener("beforeunload", () => {
+        if (timer) clearInterval(timer);
+        try { navigator.sendBeacon("{% url 'close_pcan_bus' %}"); } catch(e){}
     });
 });
 </script>
 {% endif %}
-
 
 <script>
     // Ce script initialise la lecture vidéo dans le modal
@@ -616,12 +613,7 @@ document.addEventListener("DOMContentLoaded", function () {
         videoModal.addEventListener('hidden.bs.modal', function () {
             videoFrame.src = ''; // Bonne pratique : évite de laisser tourner la vidéo en arrière-plan
         });
-        // input2.addEventListener('input', function (e) {
-        // // Si no comienza con "N", lo forzamos
-        //     if (!e.target.value.startsWith('N')) {
-        //         e.target.value = 'N' + e.target.value.replace(/^N+/, '');
-        //     }
-        // });
+        
     });
     let pdfDoc = null,
         pageNum = 1,

@@ -38,9 +38,12 @@ urlpatterns = [
          views.change_order_quantity, name='change_order_quantity'),
     path('work_step/<int:order_id>/<int:step_number>/read_pcan/',
           views.read_pcan, name='read_pcan'),
-    path("work_step/<int:order_id>/<int:step_number>/read_pcan_values/",
-         views.read_pcan_values, name="read_pcan_values"), 
-    path("read_pcan_live/", views.read_pcan_live, name="read_pcan_live"),
+#     path("work_step/<int:order_id>/<int:step_number>/read_pcan_values/",
+#          views.read_pcan_values, name="read_pcan_values"), 
+#     path("read_pcan_live/", views.read_pcan_live, name="read_pcan_live"),
+    path("close_pcan_bus/", views.close_pcan_bus, name="close_pcan_bus"),
+    path("live_status/<int:order_id>/<int:step_number>/", views.live_status, name="live_status"),
+
     ]
 
 if settings.DEBUG:

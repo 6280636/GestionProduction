@@ -1,40 +1,29 @@
-import can, threading, atexit
+# pcan_utils.py
+import threading
+import can
 
-# 🔒 Lock global para evitar acceso simultáneo al bus
+_bus = None
 bus_lock = threading.Lock()
 
-# 🔄 Variable global que mantiene el bus activo
-bus = None
+DEFAULT_IFACE = "PCAN_USBBUS1"
+DEFAULT_BITRATE = 50000  # 50 kbit/s
 
 def get_bus():
-    """
-    Devuelve una instancia global del bus PCAN.
-    Si no existe, la crea e inicializa.
-    """
-    global bus
-    if bus is None:
-        print("⚙️ Inicializando bus PCAN global...")
-        bus = can.interface.Bus(interface="pcan", channel="PCAN_USBBUS1", bitrate=50000)
-        print("✅ Bus PCAN inicializado correctamente")
-    return bus
-
-
+    global _bus
+    if _bus is not None:
+        return _bus
+    _bus = can.interface.Bus(
+        channel=DEFAULT_IFACE,
+        interface="pcan",
+        bitrate=DEFAULT_BITRATE,
+        fd=False
+    )
+    return _bus
 
 def shutdown_bus():
-    """
-    Cierra el bus PCAN global si está abierto.
-    Se llama automáticamente al salir del servidor Django.
-    """
-    global bus
-    if bus is not None:
+    global _bus
+    if _bus is not None:
         try:
-            print("🔻 Cerrando bus PCAN...")
-            bus.shutdown()
-        except Exception as e:
-            print(f"⚠️ Error al cerrar bus: {e}")
+            _bus.shutdown()
         finally:
-            bus = None
-            print("✅ Bus PCAN cerrado correctamente")
-
-# 👉 Registrar el cierre automático al terminar el servidor
-atexit.register(shutdown_bus)
+            _bus = None
